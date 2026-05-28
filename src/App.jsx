@@ -3,6 +3,11 @@ import StarBackground from './components/StarBackground';
 import InputScreen from './components/InputScreen';
 import ResultScreen from './components/ResultScreen';
 import CTAScreen from './components/CTAScreen';
+import { MOCK_PAST_LIVES } from './mockData.js';
+
+// VITE_MOCK_MODE=true → 목업 데이터 사용 (API 호출 없음)
+// VITE_MOCK_MODE=false 또는 미설정 → 실제 Anthropic API 호출
+const IS_MOCK = import.meta.env.VITE_MOCK_MODE === 'true';
 
 const CACHE_PREFIX = 'sinbe_pastlife_';
 
@@ -51,13 +56,22 @@ export default function App() {
     setScreen('loading');
 
     try {
-      const res = await fetch('/api/past-lives', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives }),
-      });
-      const data = await res.json();
-      if (!res.ok || data.error) throw new Error(data.error || `서버 오류 (${res.status})`);
+      let data;
+
+      if (IS_MOCK) {
+        // 목업 모드: 0.8초 딜레이 후 고정 데이터 반환
+        await new Promise(r => setTimeout(r, 800));
+        data = MOCK_PAST_LIVES;
+      } else {
+        // 실제 API 모드
+        const res = await fetch('/api/past-lives', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives }),
+        });
+        data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || `서버 오류 (${res.status})`);
+      }
 
       try { localStorage.setItem(CACHE_PREFIX + hash, JSON.stringify(data)); } catch {}
 
