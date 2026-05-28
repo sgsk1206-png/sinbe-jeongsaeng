@@ -126,7 +126,7 @@ export default function App() {
         )}
         {screen === 'cta' && <CTAScreen userName={userName} onReset={handleReset} />}
       </div>
-      <div className="branding">sinbe.net</div>
+      <div className="branding">신비의거울</div>
     </div>
   );
 }

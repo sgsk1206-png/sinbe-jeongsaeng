@@ -8,6 +8,8 @@ export const MOCK_PAST_LIVES = {
     {
       era: '고려 중기',
       year: '1187년',
+      birth_year: 1152,
+      death_year: 1187,
       identity: '무속인',
       name: '박영신',
       story:
@@ -19,10 +21,19 @@ export const MOCK_PAST_LIVES = {
       historical_figure: '진성여왕',
       historical_reason: '시대의 혼란 속에서 영적 권위로 민심을 붙들었던 삶의 궤적이 닮았습니다.',
       historical_tag: '왕_신라',
+      historical_profile: {
+        name_hanja: '真聖女王',
+        dates: '재위 887 ~ 897년',
+        status: '신라 제51대 여왕',
+        achievement: '고운 최치원의 시무10조를 수용하며 개혁을 시도했습니다.',
+        evaluation: '혼란기 신라에서 영적 권위로 민심을 수습하려 한 마지막 여왕으로 평가받습니다.',
+      },
     },
     {
       era: '조선 초기',
       year: '1432년',
+      birth_year: null,
+      death_year: null,
       identity: '저승사자',
       name: '이강도',
       story:
@@ -34,10 +45,19 @@ export const MOCK_PAST_LIVES = {
       historical_figure: '정약용',
       historical_reason: '삶과 죽음의 경계에서 인간의 본질을 탐구했던 깊이가 닮았습니다.',
       historical_tag: '학자_조선',
+      historical_profile: {
+        name_hanja: '丁若鏞',
+        dates: '생몰 1762 ~ 1836년',
+        status: '조선 후기 실학자·관료',
+        achievement: '500여 편의 저술로 조선 실학을 집대성했습니다.',
+        evaluation: '삶과 제도의 본질을 꿰뚫은 조선 최고의 사상가로 평가받습니다.',
+      },
     },
     {
       era: '통일신라',
       year: '843년',
+      birth_year: null,
+      death_year: 843,
       identity: '구미호',
       name: '하연화',
       story:
@@ -49,10 +69,19 @@ export const MOCK_PAST_LIVES = {
       historical_figure: '황진이',
       historical_reason: '재능과 아름다움을 가졌으나 시대의 벽에 가로막혀 진정한 사랑을 얻지 못했던 삶이 닮았습니다.',
       historical_tag: '기생_조선',
+      historical_profile: {
+        name_hanja: '黃眞伊',
+        dates: '생몰 1506 ~ 1560년경',
+        status: '조선 중기 기생·시인',
+        achievement: '뛰어난 시가와 음악으로 당대 최고의 예인으로 이름을 떨쳤습니다.',
+        evaluation: '신분을 초월한 자유정신의 상징이자 조선 최고의 여류 예술가로 평가받습니다.',
+      },
     },
     {
       era: '고려 무신정권',
       year: '1179년',
+      birth_year: 1140,
+      death_year: 1179,
       identity: '무신',
       name: '최도원',
       story:
@@ -64,14 +93,23 @@ export const MOCK_PAST_LIVES = {
       historical_figure: '이순신',
       historical_reason: '탁월한 능력에도 모함과 시기를 받으며 끝내 비운으로 생을 마감한 궤적이 닮았습니다.',
       historical_tag: '장군_조선',
+      historical_profile: {
+        name_hanja: '李舜臣',
+        dates: '생몰 1545 ~ 1598년',
+        status: '조선 중기 삼도수군통제사',
+        achievement: '임진왜란 23전 전승으로 나라를 구한 해전의 신화를 세웠습니다.',
+        evaluation: '모함과 역경 속에서도 불굴의 의지로 나라를 지킨 민족 영웅으로 추앙받습니다.',
+      },
     },
     {
       era: '조선 중기',
       year: '1563년',
+      birth_year: 1563,
+      death_year: 1592,
       identity: '기생',
       name: '월향',
       story:
-        '월향은 평양 최고의 기생이었으나, 그의 진짜 재능은 춤이 아니라 글이었다. 양반들이 취흥에 읊는 시보다 월향의 시가 더 깊다는 것을 모두가 알면서도 아무도 말하지 않았다. 그는 자신의 시를 기방 벽 안쪽에만 써두었고, 그것은 그가 죽은 뒤 발견되었다.',
+        '월향은 평양 최고의 기생이었으나, 그의 진짜 재능은 춤이 아니라 글이었다. 양반들이 취흥에 읊는 시보다 월향의 시가 더 깊다는 것을 모두가 알면서도 아무도 말하지 않았다. 그는 자신의 시를 기방 안쪽 벽에만 써두었고, 그것은 그가 죽은 뒤 발견되었다.',
       death: '임진왜란이 터지던 해, 강에 스스로 몸을 던졌다.',
       karma: '현생에서 자신의 능력을 쉽게 드러내지 못하고 안으로만 삭히는 습성은, 그 시절 끝내 세상에 내놓지 못한 재능의 기억이다.',
       color: '#8B1A2F',
@@ -79,10 +117,19 @@ export const MOCK_PAST_LIVES = {
       historical_figure: '논개',
       historical_reason: '시대의 부름 앞에서 자신의 몸 하나로 뜻을 세웠던 결기가 닮았습니다.',
       historical_tag: '의기_조선',
+      historical_profile: {
+        name_hanja: '論介',
+        dates: '생몰 1574 ~ 1593년',
+        status: '조선 중기 의기(義妓)',
+        achievement: '진주성 함락 후 왜장을 안고 남강에 투신하여 항전 의지를 드높였습니다.',
+        evaluation: '나라가 위기에 처했을 때 몸 하나로 뜻을 세운 의로운 여인으로 기억됩니다.',
+      },
     },
     {
       era: '조선 후기',
       year: '1751년',
+      birth_year: 1678,
+      death_year: 1751,
       identity: '선비',
       name: '김도명',
       story:
@@ -94,10 +141,19 @@ export const MOCK_PAST_LIVES = {
       historical_figure: '정약용',
       historical_reason: '권력보다 학문과 사람을 택하며 시대를 앞서간 삶의 방식이 닮았습니다.',
       historical_tag: '학자_조선',
+      historical_profile: {
+        name_hanja: '丁若鏞',
+        dates: '생몰 1762 ~ 1836년',
+        status: '조선 후기 실학자·관료',
+        achievement: '500여 편의 저술로 조선 실학을 집대성했습니다.',
+        evaluation: '삶과 제도의 본질을 꿰뚫은 조선 최고의 사상가로 평가받습니다.',
+      },
     },
     {
       era: '삼국시대 고구려',
       year: '287년',
+      birth_year: null,
+      death_year: 287,
       identity: '이무기',
       name: '청룡',
       story:
@@ -109,6 +165,13 @@ export const MOCK_PAST_LIVES = {
       historical_figure: '광개토대왕',
       historical_reason: '대륙의 끝까지 뻗어나가려 했던 거대한 기상과 채워지지 않은 욕망의 크기가 닮았습니다.',
       historical_tag: '왕_고구려',
+      historical_profile: {
+        name_hanja: '廣開土大王',
+        dates: '재위 391 ~ 413년',
+        status: '고구려 제19대 대왕',
+        achievement: '요동·만주·한반도 일대를 정복하여 고구려 역사상 최대 영토를 이룩했습니다.',
+        evaluation: '동아시아 역사상 가장 넓은 영토를 개척한 정복 군주로 평가받습니다.',
+      },
     },
   ],
 };

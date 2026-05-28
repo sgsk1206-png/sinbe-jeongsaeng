@@ -47,8 +47,8 @@ body {
   bottom: 14px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 10px;
-  color: rgba(140, 90, 200, 0.35);
+  font-size: 14px;
+  color: rgba(140, 90, 200, 0.7);
   letter-spacing: 3px;
   z-index: 10;
   pointer-events: none;
@@ -240,8 +240,8 @@ input[type='number']::-webkit-inner-spin-button {
 
 .disclaimer {
   text-align: center;
-  font-size: 11px;
-  color: rgba(140, 90, 200, 0.3);
+  font-size: 13px;
+  color: rgba(140, 90, 200, 0.6);
   letter-spacing: 1px;
 }
 
@@ -675,11 +675,11 @@ input[type='number']::-webkit-inner-spin-button {
   white-space: nowrap;
 }
 
-/* ── 이미지 영역 2: 역사 인물 (1:1) ── */
+/* ── 이미지 영역 2: 역사 인물 ── */
 .hist-img-wrap {
   position: relative;
   width: 100%;
-  aspect-ratio: 1 / 1;
+  height: 200px;   /* aspect-ratio 제거 → 세로 200px 고정 */
   background: rgba(20, 12, 36, 0.9);
   border-radius: 10px;
   display: flex;
@@ -733,10 +733,47 @@ input[type='number']::-webkit-inner-spin-button {
   letter-spacing: 1px;
 }
 
+.hist-name-hanja {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 400;
+  letter-spacing: 1px;
+}
+
+.hist-profile-dates {
+  font-size: 11px;
+  color: rgba(160, 130, 210, 0.7);
+  letter-spacing: 0.5px;
+  margin-top: 2px;
+}
+
+.hist-profile-status {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.hist-profile-achievement {
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.65;
+  margin-top: 4px;
+}
+
+.hist-profile-evaluation {
+  font-size: 11px;
+  color: rgba(220, 200, 255, 0.5);
+  line-height: 1.6;
+  font-style: italic;
+}
+
 .hist-reason {
   font-size: 12px;
   color: var(--text-muted);
   line-height: 1.7;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(140, 90, 200, 0.12);
 }
 
 /* ────────────────────────────────────────────────────────
@@ -753,6 +790,26 @@ input[type='number']::-webkit-inner-spin-button {
   .char-img-wrap {
     aspect-ratio: unset;
     height: 450px;
+  }
+
+  /* ── 역사 인물: 이미지(160x160) + 프로필 가로 배치 ── */
+  .hist-figure-row {
+    display: flex;
+    flex-direction: row;
+    gap: 18px;
+    align-items: flex-start;
+  }
+
+  .hist-img-wrap {
+    width: 160px;
+    min-width: 160px;
+    height: 160px;
+    flex-shrink: 0;
+  }
+
+  .hist-info {
+    flex: 1;
+    padding-top: 2px;
   }
 
   /* ── 전체 폰트 ~10% 확대 ── */

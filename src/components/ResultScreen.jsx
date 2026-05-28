@@ -5,6 +5,17 @@ const GRADE_META = {
   '고대영혼':  { color: '#D4624A', emoji: '⚡' },
 };
 
+// birth_year / death_year 기반 시대 표시
+function eraDisplay(life) {
+  const b = life.birth_year;
+  const d = life.death_year;
+  if (b && d)  return `${b}년 ~ ${d}년`;
+  if (b && !d) return `${b}년 ~ 사망 시점 불명`;
+  if (!b && d) return `~ ${d}년`;
+  // 둘 다 없으면 기존 형식 fallback
+  return `${life.era} · ${life.year}`;
+}
+
 function CharImage({ src, identity, name, color }) {
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
@@ -40,6 +51,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
   const life = data.lives[currentIndex];
   const meta = GRADE_META[data.soul_grade] || GRADE_META['오래된영혼'];
   const cardColor = life.color || meta.color;
+  const p = life.historical_profile; // 편의용 단축
 
   return (
     <div className="result-screen">
@@ -68,7 +80,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
       </div>
 
       <div className="life-card" style={{ borderColor: `${cardColor}50` }}>
-        {/* 이미지 영역 1 — 전생 캐릭터 (3:4) */}
+        {/* 이미지 영역 — 전생 캐릭터 (3:4) */}
         <CharImage
           src=""
           identity={life.identity}
@@ -79,7 +91,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         <div className="card-body">
           <div className="card-header-inline" style={{ borderBottomColor: `${cardColor}25` }}>
             <span className="life-number">{currentIndex + 1}번째 전생</span>
-            <span className="era-text" style={{ color: cardColor }}>{life.era} · {life.year}</span>
+            <span className="era-text" style={{ color: cardColor }}>{eraDisplay(life)}</span>
           </div>
 
           <div className="card-section">
@@ -115,17 +127,33 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
             <p className="section-content karma">{life.karma}</p>
           </div>
 
-          {/* 역사 인물 구분선 */}
+          {/* 역사 인물 */}
           {life.historical_figure && (
             <>
               <div className="hist-divider">
                 <span className="hist-divider-label">✨ 당신의 전생 기운과 닮은 인물</span>
               </div>
 
-              <HistImage src="" figure={life.historical_figure} />
-              <div className="hist-info">
-                <p className="hist-name">{life.historical_figure}</p>
-                <p className="hist-reason">{life.historical_reason}</p>
+              {/* hist-figure-row: 모바일 세로 / PC 가로 배치 */}
+              <div className="hist-figure-row">
+                <HistImage src="" figure={life.historical_figure} />
+                <div className="hist-info">
+                  <p className="hist-name">
+                    {life.historical_figure}
+                    {p?.name_hanja && (
+                      <span className="hist-name-hanja"> ({p.name_hanja})</span>
+                    )}
+                  </p>
+                  {p && (
+                    <>
+                      <p className="hist-profile-dates">{p.dates}</p>
+                      <p className="hist-profile-status">{p.status}</p>
+                      <p className="hist-profile-achievement">{p.achievement}</p>
+                      <p className="hist-profile-evaluation">{p.evaluation}</p>
+                    </>
+                  )}
+                  <p className="hist-reason">{life.historical_reason}</p>
+                </div>
               </div>
             </>
           )}
@@ -146,6 +174,8 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
           {currentIndex < data.lives.length - 1 ? '다음 전생 →' : '여정 마치기 ✦'}
         </button>
       </div>
+
+      <p className="disclaimer">재미로 보는 전생 이야기입니다</p>
     </div>
   );
 }
