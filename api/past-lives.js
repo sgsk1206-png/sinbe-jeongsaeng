@@ -50,26 +50,17 @@ const SYSTEM_PROMPT = `당신은 신비로운 전생 탐험가입니다. 사람�
   ]
 }`;
 
-// Vercel raw serverless function은 body를 스트림으로 받는 경우가 있어 명시적 파싱 필요
 async function parseBody(req) {
-  // 이미 파싱된 경우 (Vercel이 자동 파싱)
   if (req.body && typeof req.body === 'object') return req.body;
-
-  // 문자열로 온 경우
   if (typeof req.body === 'string') {
     try { return JSON.parse(req.body); } catch {}
   }
-
-  // 스트림에서 직접 읽기
   return new Promise((resolve) => {
     let raw = '';
     req.on('data', (chunk) => { raw += chunk.toString(); });
     req.on('end', () => {
       try { resolve(JSON.parse(raw)); }
-      catch (e) {
-        console.error('[body-parse] JSON.parse failed:', e.message, '| raw:', raw.slice(0, 200));
-        resolve({});
-      }
+      catch { resolve({}); }
     });
     req.on('error', () => resolve({}));
   });
@@ -83,14 +74,12 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // 환경변수 확인
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    console.error('[env] OPENROUTER_API_KEY is not set');
+    console.error('[env] ANTHROPIC_API_KEY is not set');
     return res.status(500).json({ error: 'API 키가 설정되지 않았습니다. Vercel 환경변수를 확인하세요.' });
   }
 
-  // body 파싱
   const body = await parseBody(req);
   const { name, dateType, year, month, day, hour, hash, totalLives } = body;
 
@@ -110,48 +99,52 @@ export default async function handler(req, res) {
   console.log(`[request] name=${name} hash=${hash} totalLives=${totalLives}`);
 
   try {
-    const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://sinbe.net',
-        'X-Title': 'sinbe-jeongsaeng',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-sonnet-4-5',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userMessage },
-        ],
-        temperature: 0,
+        model: 'claude-sonnet-4-5',
         max_tokens: 4096,
+        temperature: 0,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userMessage }],
       }),
     });
 
-    const rawText = await orRes.text();
+    const rawText = await anthropicRes.text();
 
-    if (!orRes.ok) {
-      console.error(`[openrouter] HTTP ${orRes.status}:`, rawText.slice(0, 500));
-      return res.status(502).json({ error: `OpenRouter 오류 (${orRes.status}): ${rawText.slice(0, 200)}` });
+    if (!anthropicRes.ok) {
+      console.error(`[anthropic] HTTP ${anthropicRes.status}:`, rawText.slice(0, 500));
+      // JSON 오류 응답 파싱 시도, 실패하면 텍스트 그대로 반환
+      let errMsg = rawText;
+      try {
+        const errJson = JSON.parse(rawText);
+        errMsg = errJson.error?.message || errJson.message || rawText;
+      } catch {}
+      return res.status(502).json({ error: `Anthropic 오류 (${anthropicRes.status}): ${errMsg.slice(0, 300)}` });
     }
 
     let result;
-    try { result = JSON.parse(rawText); }
-    catch (e) {
-      console.error('[openrouter] response JSON parse failed:', rawText.slice(0, 500));
-      return res.status(502).json({ error: 'OpenRouter 응답 파싱 실패' });
+    try {
+      result = JSON.parse(rawText);
+    } catch {
+      console.error('[anthropic] response parse failed:', rawText.slice(0, 500));
+      return res.status(502).json({ error: 'Anthropic 응답 파싱 실패' });
     }
 
-    const text = result.choices?.[0]?.message?.content;
+    const text = result.content?.[0]?.text;
     if (!text) {
-      console.error('[openrouter] empty content. result:', JSON.stringify(result).slice(0, 500));
+      console.error('[anthropic] empty content:', JSON.stringify(result).slice(0, 300));
       return res.status(502).json({ error: 'AI 응답이 비어있습니다.' });
     }
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error('[parse] no JSON found in response:', text.slice(0, 500));
+      console.error('[parse] no JSON in response:', text.slice(0, 300));
       return res.status(502).json({ error: 'AI 응답에서 JSON을 찾지 못했습니다.' });
     }
 
@@ -160,7 +153,7 @@ export default async function handler(req, res) {
     return res.json(data);
 
   } catch (err) {
-    console.error('[unexpected]', err.message, err.stack);
+    console.error('[unexpected]', err.message);
     return res.status(500).json({ error: `서버 오류: ${err.message}` });
   }
 }

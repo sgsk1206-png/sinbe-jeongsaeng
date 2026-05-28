@@ -4,9 +4,9 @@ import express from 'express';
 const app = express();
 app.use(express.json());
 
-const apiKey = process.env.OPENROUTER_API_KEY;
+const apiKey = process.env.ANTHROPIC_API_KEY;
 if (!apiKey) {
-  console.error('❌ OPENROUTER_API_KEY 환경변수가 없습니다. .env 파일을 확인하세요.');
+  console.error('❌ ANTHROPIC_API_KEY 환경변수가 없습니다. .env 파일을 확인하세요.');
   process.exit(1);
 }
 
@@ -74,33 +74,32 @@ app.post('/api/past-lives', async (req, res) => {
 위 정보로 정확히 ${totalLives}개의 전생을 JSON으로 생성하세요. 시드값 ${hash}을 기반으로 항상 동일한 결과를 반환하세요.`;
 
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://sinbe.net',
-        'X-Title': 'sinbe-jeongsaeng',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-sonnet-4-5',
-        messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
-          { role: 'user', content: userMessage },
-        ],
-        temperature: 0,
+        model: 'claude-sonnet-4-5',
         max_tokens: 4096,
+        temperature: 0,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userMessage }],
       }),
     });
 
+    const rawText = await response.text();
     if (!response.ok) {
-      const errText = await response.text();
-      console.error('OpenRouter HTTP error:', response.status, errText);
-      throw new Error(`OpenRouter ${response.status}: ${errText}`);
+      let errMsg = rawText;
+      try { errMsg = JSON.parse(rawText).error?.message || rawText; } catch {}
+      console.error('Anthropic HTTP error:', response.status, errMsg);
+      throw new Error(`Anthropic ${response.status}: ${errMsg}`);
     }
 
-    const result = await response.json();
-    const text = result.choices?.[0]?.message?.content;
+    const result = JSON.parse(rawText);
+    const text = result.content?.[0]?.text;
     if (!text) throw new Error('응답 텍스트 없음');
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
