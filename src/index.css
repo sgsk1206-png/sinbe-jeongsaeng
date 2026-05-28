@@ -1,0 +1,740 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #080512;
+  --card-bg: #0d0920;
+  --text: #ede8f5;
+  --text-muted: #8878a8;
+  --border: rgba(140, 90, 200, 0.18);
+  --accent: #9B59B6;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Serif KR', serif;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Layout ── */
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+.container {
+  width: 100%;
+  max-width: 460px;
+  min-height: 100dvh;
+  padding: 0 20px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.branding {
+  position: fixed;
+  bottom: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  color: rgba(140, 90, 200, 0.35);
+  letter-spacing: 3px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ── INPUT SCREEN ── */
+.input-screen {
+  padding: 52px 0 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+.title-area {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-icon {
+  font-size: 22px;
+  color: #b06ee0;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.title {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 6px;
+  background: linear-gradient(135deg, #c084fc 0%, #e879f9 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 3px;
+  font-weight: 300;
+}
+
+.input-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+}
+
+.text-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 16px;
+  color: var(--text);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  -webkit-appearance: none;
+}
+
+.text-input:focus {
+  border-color: rgba(155, 89, 182, 0.55);
+  background: rgba(155, 89, 182, 0.05);
+}
+
+.text-input::placeholder {
+  color: rgba(140, 90, 200, 0.28);
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 8px;
+}
+
+.toggle-btn {
+  flex: 1;
+  padding: 11px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-btn.active {
+  background: rgba(155, 89, 182, 0.18);
+  border-color: rgba(155, 89, 182, 0.6);
+  color: #c084fc;
+}
+
+.date-row {
+  display: flex;
+  gap: 8px;
+}
+
+.date-input {
+  flex: 1;
+  text-align: center;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.select-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%238878a8' d='M5 6 0 0h10z'/%3E%3C/svg%3E")
+    no-repeat right 16px center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 13px 40px 13px 16px;
+  color: var(--text);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  outline: none;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.select-input option {
+  background: #0d0920;
+  color: var(--text);
+}
+
+.hint-text {
+  font-size: 11px;
+  color: rgba(160, 110, 210, 0.55);
+  margin-top: 2px;
+}
+
+.error-text {
+  color: #e07070;
+  font-size: 13px;
+  text-align: center;
+  background: rgba(220, 80, 80, 0.08);
+  border: 1px solid rgba(220, 80, 80, 0.2);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.submit-btn {
+  margin-top: 4px;
+  padding: 16px;
+  background: linear-gradient(135deg, #6b21d4 0%, #9B59B6 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 24px rgba(107, 33, 212, 0.35);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(107, 33, 212, 0.5);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+}
+
+.disclaimer {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(140, 90, 200, 0.3);
+  letter-spacing: 1px;
+}
+
+/* ── LOADING ── */
+.loading-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+}
+
+.loading-orb {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #d090ff, #7B2FBE 50%, #3a0080);
+  box-shadow: 0 0 40px rgba(155, 89, 182, 0.7), 0 0 80px rgba(155, 89, 182, 0.3);
+  animation: orb-pulse 2s ease-in-out infinite;
+}
+
+.loading-text {
+  font-size: 16px;
+  color: var(--text);
+  letter-spacing: 2px;
+}
+
+.loading-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+/* ── RESULT SCREEN ── */
+.result-screen {
+  padding: 36px 0 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.result-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.life-count-text {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.7;
+}
+
+.name-highlight {
+  color: #c084fc;
+  font-weight: 600;
+}
+
+.count-highlight {
+  color: #e879f9;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.soul-grade-badge {
+  display: inline-block;
+  padding: 5px 18px;
+  border-radius: 20px;
+  border: 1px solid;
+  font-size: 12px;
+  letter-spacing: 2px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+/* Dot progress */
+.dot-progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(140, 90, 200, 0.18);
+  transition: all 0.3s;
+  flex-shrink: 0;
+}
+
+.dot.active {
+  width: 10px;
+  height: 10px;
+}
+
+/* Life card */
+.life-card {
+  background: var(--card-bg);
+  border: 1px solid;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.card-header-inline {
+  padding: 14px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid;
+  padding-bottom: 12px;
+  margin-bottom: 2px;
+}
+
+.life-number {
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.era-text {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.card-body {
+  padding: 4px 20px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.card-section {
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.card-divider {
+  height: 1px;
+}
+
+.section-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.section-content {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--text);
+}
+
+.section-content.identity {
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.section-content.life-name {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.section-content.story {
+  font-size: 13px;
+  color: rgba(237, 232, 245, 0.82);
+  line-height: 1.85;
+}
+
+.section-content.death {
+  font-size: 13px;
+  color: rgba(237, 232, 245, 0.6);
+  font-style: italic;
+  line-height: 1.7;
+}
+
+.section-content.karma {
+  font-size: 13px;
+  line-height: 1.75;
+}
+
+.karma-section {
+  border-radius: 8px;
+  padding: 12px !important;
+}
+
+.karma-label {
+  color: rgba(200, 175, 225, 0.7) !important;
+}
+
+/* Nav buttons */
+.nav-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.nav-btn {
+  flex: 1;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.prev-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  flex: 0 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+.prev-btn:hover {
+  color: var(--text);
+  border-color: rgba(140, 90, 200, 0.4);
+}
+
+.next-btn {
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.next-btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+}
+
+/* ── CTA SCREEN ── */
+.cta-screen {
+  padding: 52px 0 100px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.cta-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.cta-star {
+  font-size: 28px;
+  color: #FFD700;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.cta-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #c084fc, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.cta-subtitle {
+  font-size: 14px;
+  color: var(--text);
+}
+
+.cta-desc {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+.cta-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.cta-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--card-bg);
+  border: 1px solid;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: all 0.22s;
+}
+
+.cta-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.cta-icon {
+  font-size: 26px;
+  flex-shrink: 0;
+}
+
+.cta-card-content {
+  flex: 1;
+}
+
+.cta-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 3px;
+}
+
+.cta-card-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cta-arrow {
+  font-size: 18px;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.reset-btn {
+  padding: 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-family: 'Noto Serif KR', serif;
+  font-size: 14px;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover {
+  border-color: rgba(155, 89, 182, 0.4);
+  color: var(--text);
+}
+
+/* ── Animations ── */
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.12); }
+}
+
+@keyframes orb-pulse {
+  0%, 100% { transform: scale(1);    box-shadow: 0 0 40px rgba(155, 89, 182, 0.7), 0 0 80px rgba(155, 89, 182, 0.3); }
+  50%       { transform: scale(1.25); box-shadow: 0 0 60px rgba(155, 89, 182, 0.9), 0 0 120px rgba(155, 89, 182, 0.5); }
+}
+
+/* ── 이미지 영역 1: 전생 캐릭터 (3:4) ── */
+.char-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.char-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* src 비어있을 때 img 숨김 */
+.char-img:not([src]),
+.char-img[src=''] {
+  display: none;
+}
+
+.char-img-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 24px;
+  text-align: center;
+  z-index: 1;
+}
+
+.char-placeholder-identity {
+  font-size: 13px;
+  color: rgba(237, 232, 245, 0.55);
+  letter-spacing: 2px;
+}
+
+.char-placeholder-name {
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: 3px;
+}
+
+/* ── 역사 인물 구분선 ── */
+.hist-divider {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 20px 0 16px;
+}
+
+.hist-divider::before,
+.hist-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(140, 90, 200, 0.2);
+}
+
+.hist-divider-label {
+  font-size: 11px;
+  color: rgba(200, 175, 225, 0.65);
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* ── 이미지 영역 2: 역사 인물 (1:1) ── */
+.hist-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: rgba(20, 12, 36, 0.9);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid rgba(140, 90, 200, 0.15);
+}
+
+.hist-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hist-img:not([src]),
+.hist-img[src=''] {
+  display: none;
+}
+
+.hist-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1;
+}
+
+.hist-placeholder-name {
+  font-size: 22px;
+  font-weight: 600;
+  color: rgba(237, 232, 245, 0.6);
+  letter-spacing: 3px;
+  text-align: center;
+}
+
+/* ── 역사 인물 정보 ── */
+.hist-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 12px 0 4px;
+}
+
+.hist-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 1px;
+}
+
+.hist-reason {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
