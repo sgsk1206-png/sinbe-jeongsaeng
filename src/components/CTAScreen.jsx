@@ -1,21 +1,31 @@
 const CTA_ITEMS = [
   {
-    icon: '💕',
-    title: '연인 궁합',
-    desc: '두 영혼의 인연을 확인하세요',
-    color: '#E91E8C',
-  },
-  {
-    icon: '☯',
-    title: '사주 풀이',
-    desc: '운명의 흐름을 읽어드립니다',
-    color: '#A86ECC',
+    icon: '☀️',
+    title: '오늘 운세',
+    desc: '오늘 나의 운명의 흐름을 확인하세요',
+    color: '#E8A020',
+    href: 'https://sinbe.net/',
   },
   {
     icon: '🃏',
     title: '타로 상담',
     desc: '카드가 말하는 당신의 미래',
     color: '#4A90D4',
+    href: 'https://sinbe.net/?cate=1',
+  },
+  {
+    icon: '☯️',
+    title: '사주 상담',
+    desc: '운명의 흐름을 읽어드립니다',
+    color: '#A86ECC',
+    href: 'https://sinbe.net/?cate=2',
+  },
+  {
+    icon: '🔮',
+    title: '신점 상담',
+    desc: '신령의 기운으로 풀어드립니다',
+    color: '#5BBFA8',
+    href: 'https://sinbe.net/?cate=3',
   },
 ];
 
@@ -35,7 +45,7 @@ export default function CTAScreen({ userName, onReset }) {
         {CTA_ITEMS.map((item) => (
           <a
             key={item.title}
-            href="https://sinbe.net"
+            href={item.href}
             target="_blank"
             rel="noopener noreferrer"
             className="cta-card"
