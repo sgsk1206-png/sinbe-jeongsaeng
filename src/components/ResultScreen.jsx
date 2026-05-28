@@ -122,13 +122,10 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
                 <span className="hist-divider-label">✨ 당신의 전생 기운과 닮은 인물</span>
               </div>
 
-              {/* 이미지 영역 2 — 역사 인물 (1:1) + 설명: PC에서 가로 배치 */}
-              <div className="hist-figure-row">
-                <HistImage src="" figure={life.historical_figure} />
-                <div className="hist-info">
-                  <p className="hist-name">{life.historical_figure}</p>
-                  <p className="hist-reason">{life.historical_reason}</p>
-                </div>
+              <HistImage src="" figure={life.historical_figure} />
+              <div className="hist-info">
+                <p className="hist-name">{life.historical_figure}</p>
+                <p className="hist-reason">{life.historical_reason}</p>
               </div>
             </>
           )}
