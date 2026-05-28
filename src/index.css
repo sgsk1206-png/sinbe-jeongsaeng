@@ -834,18 +834,19 @@ input[type='number']::-webkit-inner-spin-button {
     height: 450px;
   }
 
-  /* ── 역사 인물: 이미지(260x260) + 프로필 가로 배치 ── */
+  /* ── 역사 인물: 이미지(260px 기준) + 프로필 가로 배치 ── */
   .hist-figure-row {
     display: flex;
     flex-direction: row;
     gap: 20px;
-    align-items: flex-start;
+    align-items: stretch;   /* 오른쪽 텍스트 높이에 맞춰 양쪽 동일 높이 */
   }
 
   .hist-img-wrap {
     width: 260px;
     min-width: 260px;
-    height: 260px;
+    height: auto;           /* 고정 높이 해제 → 텍스트 높이에 맞춰 자동 확장 */
+    min-height: 260px;      /* 최소 260px 유지 */
     flex-shrink: 0;
   }
 
