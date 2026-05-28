@@ -106,7 +106,7 @@ export default function App() {
   return (
     <div className="app">
       <StarBackground />
-      <div className="container">
+      <div className={`container container--${screen}`}>
         {screen === 'input' && <InputScreen onSubmit={handleSubmit} error={error} />}
         {screen === 'loading' && (
           <div className="loading-screen">
