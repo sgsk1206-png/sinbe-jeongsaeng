@@ -819,6 +819,39 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /* ────────────────────────────────────────────────────────
+   모바일 ≤ 767px — 입력 화면 텍스트 색상만 (폰트 크기 변경 없음)
+──────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* 부제목 */
+  .subtitle               { color: #d4b8f0; }
+
+  /* 라벨 (이름, 달력구분, 생년월일, 태어난 시) */
+  .field-label            { color: #c8a8e8; }
+
+  /* 입력 필드 실제 입력 텍스트 */
+  .text-input             { color: #f0e0ff; }
+
+  /* 입력 필드 placeholder */
+  .text-input::placeholder { color: #9878c0; opacity: 1; }
+
+  /* 드롭다운 */
+  .select-input           { color: #e0ccf5; }
+
+  /* 양력/음력 버튼 — 기본 */
+  .toggle-btn             { color: #e0d0f8; }
+
+  /* 양력/음력 버튼 — 선택됨 */
+  .toggle-btn.active      { color: #ffffff; }
+
+  /* "시간을 입력하면 더 정확합니다" */
+  .hint-text              { color: #b090d8; opacity: 1; }
+
+  /* "재미로 보는 전생 이야기입니다" */
+  .disclaimer             { color: #a080c8; opacity: 1; }
+}
+
+/* ────────────────────────────────────────────────────────
    PC  ≥ 768px  — 모바일 레이아웃 유지, 너비·이미지·폰트만 조정
 ──────────────────────────────────────────────────────── */
 @media (min-width: 768px) {
