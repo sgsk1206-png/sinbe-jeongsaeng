@@ -82,7 +82,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
       <div className="life-card" style={{ borderColor: `${cardColor}50` }}>
         {/* 이미지 영역 — 전생 캐릭터 (3:4) */}
         <CharImage
-          src=""
+          src={life.image_file || ''}
           identity={life.identity}
           name={life.name}
           color={cardColor}
