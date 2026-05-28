@@ -855,24 +855,38 @@ input[type='number']::-webkit-inner-spin-button {
     padding-top: 2px;
   }
 
-  /* ── 전체 폰트 ~10% 확대 ── */
-  .title                          { font-size: 33px; }
-  .subtitle                       { font-size: 13px; }
+  /* ── 입력 화면 폰트 ── */
+  .title                          { font-size: 56px; letter-spacing: 6px; }
+  .subtitle                       { font-size: 18px; }
+  .field-label                    { font-size: 15px; }
+  .text-input                     { font-size: 16px; }
+  .select-input                   { font-size: 16px; }
+  .hint-text                      { font-size: 14px; }
+  .disclaimer                     { font-size: 14px; }
+  .submit-btn                     { font-size: 19px; }
+
+  /* ── 결과 화면 폰트 ── */
   .life-count-text                { font-size: 17px; }
   .count-highlight                { font-size: 22px; }
+  .life-number                    { font-size: 14px; }
   .era-text                       { font-size: 14px; }
-  .section-label                  { font-size: 11px; }
+  .section-label                  { font-size: 13px; }
   .section-content                { font-size: 15px; }
-  .section-content.identity       { font-size: 17px; }
-  .section-content.life-name      { font-size: 22px; }
-  .section-content.story,
-  .section-content.death,
-  .section-content.karma          { font-size: 14px; }
-  .nav-btn                        { font-size: 15px; }
+  .section-content.identity       { font-size: 22px; }
+  .section-content.life-name      { font-size: 32px; }
+  .section-content.story          { font-size: 17px; line-height: 1.9; }
+  .section-content.death          { font-size: 16px; }
+  .section-label.karma-label      { font-size: 16px; }
+  .section-content.karma          { font-size: 16px; }
+  .hist-divider-label             { font-size: 15px; }
+  .hist-name                      { font-size: 24px; }
+  .hist-section-text              { font-size: 14px; }
+  .hist-meta-value                { font-size: 14px; }
   .char-placeholder-name          { font-size: 29px; }
-  .hist-name                      { font-size: 18px; }
-  .hist-section-text              { font-size: 13px; }
-  .hist-meta-value                { font-size: 13px; }
+  .prev-btn                       { font-size: 16px; }
+  .next-btn                       { font-size: 18px; }
+
+  /* ── CTA 폰트 ── */
   .cta-title                      { font-size: 26px; }
   .cta-subtitle                   { font-size: 15px; }
 }
