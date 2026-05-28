@@ -137,22 +137,64 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
               {/* hist-figure-row: 모바일 세로 / PC 가로 배치 */}
               <div className="hist-figure-row">
                 <HistImage src="" figure={life.historical_figure} />
+
                 <div className="hist-info">
-                  <p className="hist-name">
-                    {life.historical_figure}
+                  {/* ── 이름 헤더 ── */}
+                  <div className="hist-name-row">
+                    <span className="hist-name">{life.historical_figure}</span>
                     {p?.name_hanja && (
-                      <span className="hist-name-hanja"> ({p.name_hanja})</span>
+                      <span className="hist-name-hanja">({p.name_hanja})</span>
                     )}
-                  </p>
+                  </div>
+                  <div className="hist-name-divider" />
+
                   {p && (
                     <>
-                      <p className="hist-profile-dates">{p.dates}</p>
-                      <p className="hist-profile-status">{p.status}</p>
-                      <p className="hist-profile-achievement">{p.achievement}</p>
-                      <p className="hist-profile-evaluation">{p.evaluation}</p>
+                      {/* ── 생몰 / 신분 메타 ── */}
+                      <div className="hist-meta-list">
+                        {p.birth_death && (
+                          <div className="hist-meta-row">
+                            <span className="hist-meta-icon">📅</span>
+                            <span className="hist-meta-label">생몰</span>
+                            <span className="hist-meta-value">{p.birth_death}</span>
+                          </div>
+                        )}
+                        {p.title && (
+                          <div className="hist-meta-row">
+                            <span className="hist-meta-icon">👑</span>
+                            <span className="hist-meta-label">신분</span>
+                            <span className="hist-meta-value">{p.title}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ── 주요 업적 ── */}
+                      {p.achievement && (
+                        <div className="hist-section">
+                          <div className="hist-section-label">📖 주요 업적</div>
+                          <p className="hist-section-text">{p.achievement}</p>
+                        </div>
+                      )}
+
+                      {/* ── 역사적 평가 ── */}
+                      {p.evaluation && (
+                        <div className="hist-section">
+                          <div className="hist-section-label">✨ 역사적 평가</div>
+                          <p className="hist-section-text">{p.evaluation}</p>
+                        </div>
+                      )}
+
+                      {/* ── 닮은 이유 ── */}
+                      {(p.reason || life.historical_reason) && (
+                        <div className="hist-section">
+                          <div className="hist-section-label">💫 닮은 이유</div>
+                          <p className="hist-section-text hist-reason-text">
+                            {p.reason || life.historical_reason}
+                          </p>
+                        </div>
+                      )}
                     </>
                   )}
-                  <p className="hist-reason">{life.historical_reason}</p>
                 </div>
               </div>
             </>

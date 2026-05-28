@@ -723,12 +723,19 @@ input[type='number']::-webkit-inner-spin-button {
   text-align: center;
 }
 
-/* ── 역사 인물 정보 ── */
+/* ── 역사 인물 프로필 카드 ── */
 .hist-info {
   display: flex;
   flex-direction: column;
-  gap: 5px;
   padding: 12px 0 4px;
+}
+
+/* 이름 헤더 */
+.hist-name-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .hist-name {
@@ -745,40 +752,70 @@ input[type='number']::-webkit-inner-spin-button {
   letter-spacing: 1px;
 }
 
-.hist-profile-dates {
-  font-size: 11px;
-  color: rgba(160, 130, 210, 0.7);
-  letter-spacing: 0.5px;
-  margin-top: 2px;
+.hist-name-divider {
+  height: 1px;
+  background: rgba(140, 90, 200, 0.22);
+  margin: 8px 0 6px;
 }
 
-.hist-profile-status {
+/* 생몰 / 신분 메타 */
+.hist-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.hist-meta-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.hist-meta-icon {
   font-size: 11px;
+  flex-shrink: 0;
+  width: 16px;
+  margin-top: 1px;
+}
+
+.hist-meta-label {
+  font-size: 10px;
   color: var(--text-muted);
   letter-spacing: 0.5px;
+  min-width: 22px;
+  flex-shrink: 0;
+  padding-top: 1px;
 }
 
-.hist-profile-achievement {
+.hist-meta-value {
+  font-size: 12px;
+  color: rgba(220, 210, 245, 0.85);
+  line-height: 1.5;
+}
+
+/* 섹션 (업적 / 평가 / 닮은 이유) */
+.hist-section {
+  margin-top: 9px;
+}
+
+.hist-section-label {
+  font-size: 10px;
+  color: rgba(175, 145, 220, 0.85);
+  letter-spacing: 0.5px;
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+
+.hist-section-text {
   font-size: 12px;
   color: var(--text);
-  line-height: 1.65;
-  margin-top: 4px;
-}
-
-.hist-profile-evaluation {
-  font-size: 11px;
-  color: rgba(220, 200, 255, 0.5);
-  line-height: 1.6;
-  font-style: italic;
-}
-
-.hist-reason {
-  font-size: 12px;
-  color: var(--text-muted);
   line-height: 1.7;
-  margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(140, 90, 200, 0.12);
+}
+
+.hist-reason-text {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 /* ────────────────────────────────────────────────────────
@@ -833,7 +870,8 @@ input[type='number']::-webkit-inner-spin-button {
   .nav-btn                        { font-size: 15px; }
   .char-placeholder-name          { font-size: 29px; }
   .hist-name                      { font-size: 18px; }
-  .hist-reason                    { font-size: 13px; }
+  .hist-section-text              { font-size: 13px; }
+  .hist-meta-value                { font-size: 13px; }
   .cta-title                      { font-size: 26px; }
   .cta-subtitle                   { font-size: 15px; }
 }
