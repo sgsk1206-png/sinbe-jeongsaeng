@@ -50,6 +50,31 @@ const SYSTEM_PROMPT = `당신은 신비로운 전생 탐험가입니다. 사람�
   ]
 }`;
 
+// Vercel raw serverless function은 body를 스트림으로 받는 경우가 있어 명시적 파싱 필요
+async function parseBody(req) {
+  // 이미 파싱된 경우 (Vercel이 자동 파싱)
+  if (req.body && typeof req.body === 'object') return req.body;
+
+  // 문자열로 온 경우
+  if (typeof req.body === 'string') {
+    try { return JSON.parse(req.body); } catch {}
+  }
+
+  // 스트림에서 직접 읽기
+  return new Promise((resolve) => {
+    let raw = '';
+    req.on('data', (chunk) => { raw += chunk.toString(); });
+    req.on('end', () => {
+      try { resolve(JSON.parse(raw)); }
+      catch (e) {
+        console.error('[body-parse] JSON.parse failed:', e.message, '| raw:', raw.slice(0, 200));
+        resolve({});
+      }
+    });
+    req.on('error', () => resolve({}));
+  });
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -58,10 +83,21 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
+  // 환경변수 확인
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'OPENROUTER_API_KEY not configured' });
+  if (!apiKey) {
+    console.error('[env] OPENROUTER_API_KEY is not set');
+    return res.status(500).json({ error: 'API 키가 설정되지 않았습니다. Vercel 환경변수를 확인하세요.' });
+  }
 
-  const { name, dateType, year, month, day, hour, hash, totalLives } = req.body;
+  // body 파싱
+  const body = await parseBody(req);
+  const { name, dateType, year, month, day, hour, hash, totalLives } = body;
+
+  if (!name || !year || !month || !day || !hash || !totalLives) {
+    console.error('[validation] missing fields:', { name, year, month, day, hash, totalLives });
+    return res.status(400).json({ error: '필수 입력값이 누락됐습니다.' });
+  }
 
   const userMessage = `이름: ${name}
 생년월일: ${dateType === 'lunar' ? '음력' : '양력'} ${year}년 ${month}월 ${day}일
@@ -71,8 +107,10 @@ export default async function handler(req, res) {
 
 위 정보로 정확히 ${totalLives}개의 전생을 JSON으로 생성하세요. 시드값 ${hash}을 기반으로 항상 동일한 결과를 반환하세요.`;
 
+  console.log(`[request] name=${name} hash=${hash} totalLives=${totalLives}`);
+
   try {
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const orRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -91,25 +129,38 @@ export default async function handler(req, res) {
       }),
     });
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error('OpenRouter error:', response.status, errText);
-      throw new Error(`OpenRouter ${response.status}: ${errText}`);
+    const rawText = await orRes.text();
+
+    if (!orRes.ok) {
+      console.error(`[openrouter] HTTP ${orRes.status}:`, rawText.slice(0, 500));
+      return res.status(502).json({ error: `OpenRouter 오류 (${orRes.status}): ${rawText.slice(0, 200)}` });
     }
 
-    const result = await response.json();
+    let result;
+    try { result = JSON.parse(rawText); }
+    catch (e) {
+      console.error('[openrouter] response JSON parse failed:', rawText.slice(0, 500));
+      return res.status(502).json({ error: 'OpenRouter 응답 파싱 실패' });
+    }
+
     const text = result.choices?.[0]?.message?.content;
-    if (!text) throw new Error('응답 텍스트 없음');
+    if (!text) {
+      console.error('[openrouter] empty content. result:', JSON.stringify(result).slice(0, 500));
+      return res.status(502).json({ error: 'AI 응답이 비어있습니다.' });
+    }
 
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error('JSON 파싱 실패, 원문:', text);
-      throw new Error('JSON 파싱 실패');
+      console.error('[parse] no JSON found in response:', text.slice(0, 500));
+      return res.status(502).json({ error: 'AI 응답에서 JSON을 찾지 못했습니다.' });
     }
 
-    res.json(JSON.parse(jsonMatch[0]));
+    const data = JSON.parse(jsonMatch[0]);
+    console.log(`[success] soul_grade=${data.soul_grade} total=${data.total}`);
+    return res.json(data);
+
   } catch (err) {
-    console.error('API error:', err.message);
-    res.status(500).json({ error: err.message });
+    console.error('[unexpected]', err.message, err.stack);
+    return res.status(500).json({ error: `서버 오류: ${err.message}` });
   }
 }

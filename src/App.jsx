@@ -56,9 +56,8 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives }),
       });
-      if (!res.ok) throw new Error('서버 오류가 발생했습니다');
       const data = await res.json();
-      if (data.error) throw new Error(data.error);
+      if (!res.ok || data.error) throw new Error(data.error || `서버 오류 (${res.status})`);
 
       try { localStorage.setItem(CACHE_PREFIX + hash, JSON.stringify(data)); } catch {}
 
