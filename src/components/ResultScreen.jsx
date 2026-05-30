@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+
 const GRADE_META = {
   '첫번째생': { color: '#FFD700', emoji: '✨' },
   '어린영혼':  { color: '#6BA3D4', emoji: '🌱' },
@@ -20,6 +22,7 @@ function CharImage({ src, identity, name, shortName, color }) {
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
       <img
+        key={src}
         className="char-img"
         src={src || ''}
         alt={`${identity} ${name}`}
@@ -56,6 +59,18 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
   // 표시용 파생값
   const shortName     = life.name.split(' ').at(-1);              // 마지막 단어만 (연이, 강이도 …)
   const shortIdentity = life.identity.split('(')[0].trim();       // 괄호 앞 직업명만 (구미호, 저승사자 …)
+
+  // 인접 전생 이미지 프리로드 (currentIndex 변경마다 실행)
+  useEffect(() => {
+    const neighbors = [
+      data.lives[currentIndex - 1]?.image_file,
+      data.lives[currentIndex + 1]?.image_file,
+    ].filter(Boolean);
+    neighbors.forEach((file) => {
+      const img = new Image();
+      img.src = file;
+    });
+  }, [currentIndex, data.lives]);
 
   // 페이지 전환 시 항상 최상단부터 표시
   const handleNext = () => { window.scrollTo(0, 0); onNext(); };
