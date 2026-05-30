@@ -64,16 +64,60 @@ function HistCard({ figure }) {
       className="hist-img-wrap"
       style={{ background: bg, border: `1px solid ${color}40`, flexDirection: 'column', gap: '8px' }}
     >
+      {/* ── 배경 한자 레이어: 동일 글자를 크게·희미하게 깔기 ── */}
       {hanja && (
-        <span style={{ fontSize: '48px', fontWeight: 300, letterSpacing: '8px', color, opacity: 0.55, lineHeight: 1.1 }}>
+        <span style={{
+          position: 'absolute',
+          fontSize: '110px',
+          fontWeight: 300,
+          letterSpacing: '8px',
+          color,
+          opacity: 0.06,
+          lineHeight: 1,
+          pointerEvents: 'none',
+          userSelect: 'none',
+          zIndex: 0,
+        }}>
           {hanja}
         </span>
       )}
-      <span style={{ fontSize: '22px', fontWeight: 600, letterSpacing: '4px', color: lightColor }}>
+      {/* ── 전경 한자 (글로우 효과) ── */}
+      {hanja && (
+        <span style={{
+          position: 'relative',
+          zIndex: 1,
+          fontSize: '48px',
+          fontWeight: 300,
+          letterSpacing: '8px',
+          color,
+          opacity: 0.55,
+          lineHeight: 1.1,
+          textShadow: `0 0 20px ${color}99, 0 0 40px ${color}55, 0 0 80px ${color}22`,
+        }}>
+          {hanja}
+        </span>
+      )}
+      {/* ── 한글 이름 (글로우 효과) ── */}
+      <span style={{
+        position: 'relative',
+        zIndex: 1,
+        fontSize: '22px',
+        fontWeight: 600,
+        letterSpacing: '4px',
+        color: lightColor,
+        textShadow: `0 0 12px ${color}88, 0 0 24px ${color}44`,
+      }}>
         {figure}
       </span>
       {year && (
-        <span style={{ fontSize: '12px', letterSpacing: '2px', color: lightColor, opacity: 0.55 }}>
+        <span style={{
+          position: 'relative',
+          zIndex: 1,
+          fontSize: '12px',
+          letterSpacing: '2px',
+          color: lightColor,
+          opacity: 0.55,
+        }}>
           {year}
         </span>
       )}
