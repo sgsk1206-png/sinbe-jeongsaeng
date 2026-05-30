@@ -53,6 +53,14 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
   const cardColor = life.color || meta.color;
   const p = life.historical_profile; // 편의용 단축
 
+  // 표시용 파생값
+  const shortName     = life.name.split(' ').at(-1);              // 마지막 단어만 (연이, 강이도 …)
+  const shortIdentity = life.identity.split('(')[0].trim();       // 괄호 앞 직업명만 (구미호, 저승사자 …)
+
+  // 페이지 전환 시 항상 최상단부터 표시
+  const handleNext = () => { window.scrollTo(0, 0); onNext(); };
+  const handlePrev = () => { window.scrollTo(0, 0); onPrev(); };
+
   return (
     <div className="result-screen">
       <div className="result-header">
@@ -83,9 +91,9 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         {/* 이미지 영역 — 전생 캐릭터 (3:4) */}
         <CharImage
           src={life.image_file || ''}
-          identity={life.identity}
+          identity={shortIdentity}
           name={life.name}
-          shortName={life.name.split(' ').slice(-1)[0]}
+          shortName={shortName}
           color={cardColor}
         />
 
@@ -104,7 +112,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
 
           <div className="card-section">
             <span className="section-label">전생 이름</span>
-            <p className="section-content life-name" style={{ color: cardColor }}>{life.name}</p>
+            <p className="section-content life-name" style={{ color: cardColor }}>{shortName}</p>
           </div>
 
           <div className="card-divider" style={{ backgroundColor: `${cardColor}18` }} />
@@ -205,14 +213,14 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
 
       <div className="nav-buttons">
         {currentIndex > 0 && (
-          <button className="nav-btn prev-btn" onClick={onPrev}>
+          <button className="nav-btn prev-btn" onClick={handlePrev}>
             ← 이전
           </button>
         )}
         <button
           className="nav-btn next-btn"
           style={{ backgroundColor: cardColor }}
-          onClick={onNext}
+          onClick={handleNext}
         >
           {currentIndex < data.lives.length - 1 ? '다음 전생 →' : '여정 마치기 ✦'}
         </button>
