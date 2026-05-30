@@ -1,5 +1,23 @@
 import { useEffect } from 'react';
 
+// ── 역사 인물 패턴 배경 설정 ──
+const HIST_CONFIG = {
+  '이순신':    { bg: '#071220', words: ['임진왜란','거북선','불패','李舜臣','수군','환도','파도'],   accent: '#55c8ff' },
+  '세종대왕':  { bg: '#110d00', words: ['훈민정음','世宗','ㄱㄴㄷ','ㅏㅑㅓ','집현전','측우기'],     accent: '#e8c040' },
+  '황진이':    { bg: '#1a0820', words: ['가야금','황진이','기녀','시조','달빛'],                   accent: '#e080c0' },
+  '논개':      { bg: '#1a0808', words: ['의기','남강','논개','왜장','꽃'],                        accent: '#e05050' },
+  '정약용':    { bg: '#0a1408', words: ['목민심서','茶山','실학','거중기','유배'],                 accent: '#70c060' },
+  '광개토대왕': { bg: '#0d0d1a', words: ['광개토','정복','고구려','碑','천하'],                    accent: '#8080e0' },
+};
+const HIST_DEFAULT = { bg: '#0d0920', words: [], accent: '#9B59B6' };
+
+// 인물명+인덱스 기반 결정론적 의사난수 (0~1)
+function pseudoRand(figure, i) {
+  let h = [...figure].reduce((acc, c, j) => (acc + c.charCodeAt(0) * (j + 1)) | 0, 0);
+  h = ((h ^ (i * 2654435761)) >>> 0);
+  return (h % 10000) / 10000;
+}
+
 const GRADE_META = {
   '첫번째생': { color: '#FFD700', emoji: '✨' },
   '어린영혼':  { color: '#6BA3D4', emoji: '🌱' },
@@ -35,16 +53,36 @@ function CharImage({ src, identity, name, shortName, color }) {
   );
 }
 
-function HistImage({ src, figure }) {
+function HistPattern({ figure, profile }) {
+  const cfg = HIST_CONFIG[figure] || HIST_DEFAULT;
   return (
-    <div className="hist-img-wrap">
-      <img
-        className="hist-img"
-        src={src || ''}
-        alt={figure}
-      />
-      <div className="hist-img-placeholder">
-        <span className="hist-placeholder-name">{figure}</span>
+    <div className="hist-img-wrap" style={{ background: cfg.bg }}>
+      {/* 패턴 텍스트 — 결정론적 위치/크기/투명도 */}
+      {cfg.words.map((word, i) => (
+        <span
+          key={i}
+          className="hist-pattern-word"
+          style={{
+            top:      `${5  + pseudoRand(figure, i * 5 + 0) * 82}%`,
+            left:     `${3  + pseudoRand(figure, i * 5 + 1) * 82}%`,
+            fontSize: `${11 + pseudoRand(figure, i * 5 + 2) * 16}px`,
+            opacity:   0.10 + pseudoRand(figure, i * 5 + 3) * 0.15,
+            transform: `rotate(${-20 + pseudoRand(figure, i * 5 + 4) * 40}deg)`,
+            color: cfg.accent,
+          }}
+        >
+          {word}
+        </span>
+      ))}
+      {/* 중앙 인물 정보 */}
+      <div className="hist-pattern-center">
+        {profile?.name_hanja && (
+          <span className="hist-pattern-hanja" style={{ color: cfg.accent }}>{profile.name_hanja}</span>
+        )}
+        <span className="hist-pattern-name">{figure}</span>
+        {profile?.birth_death && (
+          <span className="hist-pattern-dates">{profile.birth_death}</span>
+        )}
       </div>
     </div>
   );
@@ -161,7 +199,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
 
               {/* hist-figure-row: 모바일 세로 / PC 가로 배치 */}
               <div className="hist-figure-row">
-                <HistImage src="" figure={life.historical_figure} />
+                <HistPattern figure={life.historical_figure} profile={p} />
 
                 <div className="hist-info">
                   {/* ── 이름 헤더 ── */}

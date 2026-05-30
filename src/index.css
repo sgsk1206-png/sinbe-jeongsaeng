@@ -735,6 +735,49 @@ input[type='number']::-webkit-inner-spin-button {
   text-align: center;
 }
 
+/* ── 역사 인물 텍스트 패턴 배경 ── */
+.hist-pattern-word {
+  position: absolute;
+  font-weight: 600;
+  letter-spacing: 1px;
+  pointer-events: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.hist-pattern-center {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  padding: 20px 16px;
+}
+
+.hist-pattern-hanja {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: 5px;
+  text-shadow: 0 0 24px currentColor, 0 0 48px currentColor;
+  line-height: 1.1;
+}
+
+.hist-pattern-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: rgba(237, 232, 245, 0.9);
+  letter-spacing: 3px;
+}
+
+.hist-pattern-dates {
+  font-size: 11px;
+  color: rgba(237, 232, 245, 0.45);
+  letter-spacing: 1px;
+  line-height: 1.6;
+}
+
 /* ── 역사 인물 프로필 카드 ── */
 .hist-info {
   display: flex;
