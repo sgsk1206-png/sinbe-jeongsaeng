@@ -609,6 +609,11 @@ input[type='number']::-webkit-inner-spin-button {
   50%       { transform: scale(1.25); box-shadow: 0 0 60px rgba(155, 89, 182, 0.9), 0 0 120px rgba(155, 89, 182, 0.5); }
 }
 
+@keyframes char-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 /* ── 이미지 영역 1: 전생 캐릭터 (9:16) ── */
 .char-img-wrap {
   position: relative;
@@ -618,6 +623,7 @@ input[type='number']::-webkit-inner-spin-button {
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  animation: char-fade-in 0.2s ease-in-out;
 }
 
 .char-img {
