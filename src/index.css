@@ -635,25 +635,29 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .char-img-placeholder {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 24px;
+  gap: 6px;
+  padding: 36px 20px 20px;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.65) 55%, transparent 100%);
   text-align: center;
-  z-index: 1;
+  z-index: 2;
 }
 
 .char-placeholder-identity {
-  font-size: 13px;
-  color: rgba(237, 232, 245, 0.9);
+  font-size: 16px;
+  color: rgba(237, 232, 245, 1);
   letter-spacing: 2px;
-  text-shadow: 0 1px 6px rgba(0,0,0,1), 0 0 16px rgba(0,0,0,0.9);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
 }
 
 .char-placeholder-name {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 600;
   letter-spacing: 3px;
   text-shadow: 0 2px 10px rgba(0,0,0,1), 0 0 28px rgba(0,0,0,0.95);
@@ -919,7 +923,8 @@ input[type='number']::-webkit-inner-spin-button {
   .hist-name                      { font-size: 24px; }
   .hist-section-text              { font-size: 14px; }
   .hist-meta-value                { font-size: 14px; }
-  .char-placeholder-name          { font-size: 29px; }
+  .char-placeholder-identity      { font-size: 18px; }
+  .char-placeholder-name          { font-size: 34px; }
   .prev-btn                       { font-size: 16px; }
   .next-btn                       { font-size: 18px; }
 

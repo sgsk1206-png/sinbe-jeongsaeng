@@ -16,7 +16,7 @@ function eraDisplay(life) {
   return `${life.era} · ${life.year}`;
 }
 
-function CharImage({ src, identity, name, color }) {
+function CharImage({ src, identity, name, shortName, color }) {
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
       <img
@@ -26,7 +26,7 @@ function CharImage({ src, identity, name, color }) {
       />
       <div className="char-img-placeholder">
         <span className="char-placeholder-identity">{identity}</span>
-        <span className="char-placeholder-name" style={{ color }}>{name}</span>
+        <span className="char-placeholder-name" style={{ color }}>{shortName}</span>
       </div>
     </div>
   );
@@ -85,6 +85,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
           src={life.image_file || ''}
           identity={life.identity}
           name={life.name}
+          shortName={life.name.split(' ').slice(-1)[0]}
           color={cardColor}
         />
 
