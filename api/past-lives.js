@@ -84,9 +84,9 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
-    console.error('[env] ANTHROPIC_API_KEY is not set');
+    console.error('[env] OPENROUTER_API_KEY is not set');
     return res.status(500).json({ error: 'API 키가 설정되지 않았습니다. Vercel 환경변수를 확인하세요.' });
   }
 
@@ -109,46 +109,49 @@ export default async function handler(req, res) {
   console.log(`[request] name=${name} hash=${hash} totalLives=${totalLives}`);
 
   try {
-    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+    const anthropicRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
+        'Authorization': `Bearer ${apiKey}`,
+        'HTTP-Referer': 'https://sinbe-jeongsaeng.vercel.app',
+        'X-Title': 'sinbe-jeongsaeng',
         'content-type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
+        model: 'anthropic/claude-sonnet-4-5',
         max_tokens: 4096,
         temperature: 0,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userMessage }],
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user', content: userMessage },
+        ],
       }),
     });
 
     const rawText = await anthropicRes.text();
 
     if (!anthropicRes.ok) {
-      console.error(`[anthropic] HTTP ${anthropicRes.status}:`, rawText.slice(0, 500));
+      console.error(`[openrouter] HTTP ${anthropicRes.status}:`, rawText.slice(0, 500));
       // JSON 오류 응답 파싱 시도, 실패하면 텍스트 그대로 반환
       let errMsg = rawText;
       try {
         const errJson = JSON.parse(rawText);
         errMsg = errJson.error?.message || errJson.message || rawText;
       } catch {}
-      return res.status(502).json({ error: `Anthropic 오류 (${anthropicRes.status}): ${errMsg.slice(0, 300)}` });
+      return res.status(502).json({ error: `OpenRouter 오류 (${anthropicRes.status}): ${errMsg.slice(0, 300)}` });
     }
 
     let result;
     try {
       result = JSON.parse(rawText);
     } catch {
-      console.error('[anthropic] response parse failed:', rawText.slice(0, 500));
-      return res.status(502).json({ error: 'Anthropic 응답 파싱 실패' });
+      console.error('[openrouter] response parse failed:', rawText.slice(0, 500));
+      return res.status(502).json({ error: 'OpenRouter 응답 파싱 실패' });
     }
 
-    const text = result.content?.[0]?.text;
+    const text = result.choices?.[0]?.message?.content;
     if (!text) {
-      console.error('[anthropic] empty content:', JSON.stringify(result).slice(0, 300));
+      console.error('[openrouter] empty content:', JSON.stringify(result).slice(0, 300));
       return res.status(502).json({ error: 'AI 응답이 비어있습니다.' });
     }
 
