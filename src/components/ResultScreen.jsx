@@ -12,6 +12,44 @@ const HIST_THEME = {
 };
 const HIST_THEME_DEFAULT = { bg: '#0d0920', color: '#a080cc', hanja: '', year: '' };
 
+// ── 그룹+성별 → 캐릭터 이미지 매핑 ──
+const GROUP_IMAGE = {
+  fantasy_여:     ['gumiho_f_1.jpg'],
+  fantasy_남:     ['jeoseungsaja_m_1.jpg'],
+  warrior_남:     ['mushin_m_1.jpg'],
+  warrior_여:     ['mushin_f_1.jpg'],
+  shaman_남:      ['musokin_m_1.jpg'],
+  shaman_여:      ['musokin_m_1.jpg'],
+  entertainer_여: ['gisaeng_f_1.jpg'],
+  entertainer_남: ['gisaeng_f_1.jpg'],
+  commoner_여:    ['nobi_f_1.jpg'],
+  commoner_남:    ['nobi_f_1.jpg'],
+  scholar_남:     ['uiwon_m_1.jpg'],
+  scholar_여:     ['uiwon_f_1.jpg'],
+  royal_남:       ['king_m_1.jpg'],
+  royal_여_공주:  ['king_f_1.jpg'],
+  royal_여_신라:  ['king_f_2.jpg'],
+  noble_남:       ['yangban_m_1.jpg'],
+  noble_여:       ['yangban_f_1.jpg'],
+  monk_남:        ['monk_m_1.jpg'],
+  monk_여:        ['monk_f_1.jpg'],
+  court_여:       ['gungnyeo_f_1.jpg'],
+  court_남:       ['gungnyeo_f_1.jpg'],
+  outlaw_남:      ['rebel_m_1.jpg'],
+  outlaw_여:      ['rebel_f_1.jpg'],
+  outcast_남:     ['outcast_m_1.jpg'],
+  outcast_여:     ['outcast_f_1.jpg'],
+};
+
+// group + gender 조합으로 이미지 경로 반환 (없으면 image_file fallback)
+function getCharImage(life) {
+  if (life.group && life.gender) {
+    const files = GROUP_IMAGE[`${life.group}_${life.gender}`];
+    if (files?.[0]) return `/images/characters/${files[0]}`;
+  }
+  return life.image_file || '';
+}
+
 // 강조색 → 화이트 방향 40% 블렌드 (한글 이름·연도 텍스트용)
 function lightenColor(hex, amount = 0.4) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -55,37 +93,55 @@ function CharImage({ src, identity, name, shortName, color }) {
   );
 }
 
-function HistCard({ figure }) {
-  const theme = HIST_THEME[figure] || HIST_THEME_DEFAULT;
-  const { bg, color, hanja, year } = theme;
+function HistCard({ figure, profile }) {
+  const theme = HIST_THEME[figure];
+  // HIST_THEME 미등록 시 historical_profile.name_hanja 자동 활용
+  const hanja      = theme?.hanja        || profile?.name_hanja  || '';
+  const year       = theme?.year         || profile?.birth_death || '';
+  const bg         = theme?.bg           || '#160a28';
+  const color      = theme?.color        || '#a080cc';
   const lightColor = lightenColor(color);
   return (
     <div
       className="hist-img-wrap"
       style={{ background: bg, border: `1px solid ${color}40`, flexDirection: 'column', gap: '8px' }}
     >
-      {hanja && (
+      {hanja ? (
+        // 한자 있음: 한자(크게) + 한글 이름
+        <>
+          <span style={{
+            fontSize: '48px',
+            fontWeight: 300,
+            letterSpacing: '8px',
+            color,
+            opacity: 0.55,
+            lineHeight: 1.1,
+            textShadow: `0 0 20px ${color}99, 0 0 40px ${color}55, 0 0 80px ${color}22`,
+          }}>
+            {hanja}
+          </span>
+          <span style={{
+            fontSize: '22px',
+            fontWeight: 600,
+            letterSpacing: '4px',
+            color: lightColor,
+            textShadow: `0 0 12px ${color}88, 0 0 24px ${color}44`,
+          }}>
+            {figure}
+          </span>
+        </>
+      ) : (
+        // 한자 없음: 한글 이름 크게
         <span style={{
-          fontSize: '48px',
-          fontWeight: 300,
-          letterSpacing: '8px',
-          color,
-          opacity: 0.55,
-          lineHeight: 1.1,
-          textShadow: `0 0 20px ${color}99, 0 0 40px ${color}55, 0 0 80px ${color}22`,
+          fontSize: '32px',
+          fontWeight: 600,
+          letterSpacing: '4px',
+          color: lightColor,
+          textShadow: `0 0 16px ${color}99, 0 0 32px ${color}55`,
         }}>
-          {hanja}
+          {figure}
         </span>
       )}
-      <span style={{
-        fontSize: '22px',
-        fontWeight: 600,
-        letterSpacing: '4px',
-        color: lightColor,
-        textShadow: `0 0 12px ${color}88, 0 0 24px ${color}44`,
-      }}>
-        {figure}
-      </span>
       {year && (
         <span style={{ fontSize: '12px', letterSpacing: '2px', color: lightColor, opacity: 0.55 }}>
           {year}
@@ -107,14 +163,11 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
 
   // 인접 전생 이미지 프리로드 (currentIndex 변경마다 실행)
   useEffect(() => {
-    const neighbors = [
-      data.lives[currentIndex - 1]?.image_file,
-      data.lives[currentIndex + 1]?.image_file,
-    ].filter(Boolean);
-    neighbors.forEach((file) => {
-      const img = new Image();
-      img.src = file;
-    });
+    [data.lives[currentIndex - 1], data.lives[currentIndex + 1]]
+      .filter(Boolean)
+      .map(getCharImage)
+      .filter(Boolean)
+      .forEach((src) => { const img = new Image(); img.src = src; });
   }, [currentIndex, data.lives]);
 
   // 페이지 전환 시 항상 최상단부터 표시
@@ -151,7 +204,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         {/* 이미지 영역 — 전생 캐릭터 (3:4) */}
         <CharImage
           key={currentIndex}
-          src={life.image_file || ''}
+          src={getCharImage(life)}
           identity={shortIdentity}
           name={life.name}
           shortName={shortName}
@@ -216,7 +269,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
 
               {/* hist-figure-row: 모바일 세로 / PC 가로 배치 */}
               <div className="hist-figure-row">
-                <HistCard figure={life.historical_figure} />
+                <HistCard figure={life.historical_figure} profile={p} />
 
                 <div className="hist-info">
                   {/* ── 이름 헤더 ── */}
