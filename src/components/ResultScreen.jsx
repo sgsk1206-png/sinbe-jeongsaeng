@@ -45,9 +45,16 @@ const GROUP_IMAGE = {
 // group + gender 조합으로 이미지 경로 반환 (없으면 image_file fallback)
 function getCharImage(life) {
   if (life.group && life.gender) {
-    const files = GROUP_IMAGE[`${life.group}_${life.gender}`];
-    if (files?.[0]) return `/images/characters/${files[0]}`;
+    const key = `${life.group}_${life.gender}`;
+    const files = GROUP_IMAGE[key];
+    console.log(`[getCharImage] group=${life.group} gender=${life.gender} key=${key} files=${JSON.stringify(files)}`);
+    if (files?.[0]) {
+      const path = `/images/characters/${files[0]}`;
+      console.log(`[getCharImage] resolved path: ${path}`);
+      return path;
+    }
   }
+  console.log(`[getCharImage] fallback image_file=${life.image_file}`);
   return life.image_file || '';
 }
 
@@ -80,6 +87,16 @@ function eraDisplay(life) {
 function CharImage({ src, identity, name, shortName, color }) {
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
+      {/* 디버그: src 값 화면 표시 */}
+      <span style={{
+        position: 'absolute', top: 4, left: 4, right: 4,
+        fontSize: '9px', color: 'rgba(255,255,0,0.85)',
+        background: 'rgba(0,0,0,0.6)', padding: '2px 4px',
+        borderRadius: 3, zIndex: 10, wordBreak: 'break-all',
+        lineHeight: 1.4, pointerEvents: 'none',
+      }}>
+        {src || '(empty)'}
+      </span>
       <img
         key={src}
         className="char-img"

@@ -184,6 +184,9 @@ export default async function handler(req, res) {
     }
 
     console.log(`[success] soul_grade=${data.soul_grade} total=${data.total}`);
+    data.lives?.forEach((l, i) => {
+      console.log(`[debug] life[${i}] name=${l.name} group=${l.group} gender=${l.gender}`);
+    });
     return res.json(data);
 
   } catch (err) {
