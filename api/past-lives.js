@@ -130,9 +130,12 @@ export default async function handler(req, res) {
 
     const rawText = await anthropicRes.text();
 
+    // ── 디버그: OpenRouter 원문 응답 전체 출력 ──
+    console.log(`[openrouter] status=${anthropicRes.status}`);
+    console.log(`[openrouter] rawText(first 1000):`, rawText.slice(0, 1000));
+
     if (!anthropicRes.ok) {
-      console.error(`[openrouter] HTTP ${anthropicRes.status}:`, rawText.slice(0, 500));
-      // JSON 오류 응답 파싱 시도, 실패하면 텍스트 그대로 반환
+      console.error(`[openrouter] HTTP error ${anthropicRes.status}:`, rawText.slice(0, 800));
       let errMsg = rawText;
       try {
         const errJson = JSON.parse(rawText);
@@ -144,24 +147,35 @@ export default async function handler(req, res) {
     let result;
     try {
       result = JSON.parse(rawText);
-    } catch {
-      console.error('[openrouter] response parse failed:', rawText.slice(0, 500));
-      return res.status(502).json({ error: 'OpenRouter 응답 파싱 실패' });
+    } catch (parseErr) {
+      console.error('[openrouter] wrapper JSON parse failed:', parseErr.message);
+      console.error('[openrouter] rawText was:', rawText.slice(0, 800));
+      return res.status(502).json({ error: `OpenRouter 응답이 JSON이 아닙니다: ${rawText.slice(0, 200)}` });
     }
 
     const text = result.choices?.[0]?.message?.content;
     if (!text) {
-      console.error('[openrouter] empty content:', JSON.stringify(result).slice(0, 300));
+      console.error('[openrouter] empty content. result:', JSON.stringify(result).slice(0, 500));
       return res.status(502).json({ error: 'AI 응답이 비어있습니다.' });
     }
 
+    console.log(`[openrouter] content(first 500):`, text.slice(0, 500));
+
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error('[parse] no JSON in response:', text.slice(0, 300));
-      return res.status(502).json({ error: 'AI 응답에서 JSON을 찾지 못했습니다.' });
+      console.error('[parse] no JSON found in content:', text.slice(0, 500));
+      return res.status(502).json({ error: `AI 응답에서 JSON을 찾지 못했습니다. 응답: ${text.slice(0, 200)}` });
     }
 
-    const data = JSON.parse(jsonMatch[0]);
+    let data;
+    try {
+      data = JSON.parse(jsonMatch[0]);
+    } catch (parseErr) {
+      console.error('[parse] JSON.parse failed:', parseErr.message);
+      console.error('[parse] matched string was:', jsonMatch[0].slice(0, 500));
+      return res.status(502).json({ error: `AI 응답 JSON 파싱 실패: ${parseErr.message}` });
+    }
+
     console.log(`[success] soul_grade=${data.soul_grade} total=${data.total}`);
     return res.json(data);
 
