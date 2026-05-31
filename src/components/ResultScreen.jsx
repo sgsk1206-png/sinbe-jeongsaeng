@@ -27,6 +27,7 @@ const GROUP_IMAGE = {
   scholar_남:     ['uiwon_m_1.jpg'],
   scholar_여:     ['uiwon_f_1.jpg'],
   royal_남:       ['king_m_1.jpg'],
+  royal_여:       ['king_f_1.jpg'],   // 기본 여성 왕족
   royal_여_공주:  ['king_f_1.jpg'],
   royal_여_신라:  ['king_f_2.jpg'],
   noble_남:       ['yangban_m_1.jpg'],
