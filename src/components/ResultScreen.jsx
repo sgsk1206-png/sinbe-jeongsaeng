@@ -113,6 +113,15 @@ function CharImage({ src, identity, name, shortName, color }) {
   );
 }
 
+// 한자 글자 수에 따라 폰트 크기 결정
+// ≤10자: 48px / 11~15자: 38px (80%) / ≥16자: 29px (60%)
+function hanjaFontSize(hanja) {
+  const len = hanja.length;
+  if (len >= 16) return '29px';
+  if (len >= 11) return '38px';
+  return '48px';
+}
+
 function HistCard({ figure, profile }) {
   const theme = HIST_THEME[figure];
   // HIST_THEME 미등록 시 historical_profile.name_hanja 자동 활용
@@ -130,7 +139,7 @@ function HistCard({ figure, profile }) {
         // 한자 있음: 한자(크게) + 한글 이름
         <>
           <span style={{
-            fontSize: '48px',
+            fontSize: hanjaFontSize(hanja),
             fontWeight: 300,
             letterSpacing: '8px',
             color,
