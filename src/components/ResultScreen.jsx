@@ -361,15 +361,10 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         )}
         <button
           className="nav-btn next-btn"
-          style={{ backgroundColor: isLoadingNext ? '#4a4460' : cardColor, opacity: isLoadingNext ? 0.75 : 1 }}
+          style={{ backgroundColor: cardColor }}
           onClick={handleNext}
-          disabled={isLoadingNext}
         >
-          {isLoadingNext
-            ? '탐험 중...'
-            : currentIndex < data.total - 1
-            ? '다음 전생 →'
-            : '여정 마치기 ✦'}
+          {currentIndex < data.total - 1 ? '다음 전생 →' : '여정 마치기 ✦'}
         </button>
       </div>
 
