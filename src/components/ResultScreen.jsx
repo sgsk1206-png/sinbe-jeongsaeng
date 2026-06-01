@@ -169,7 +169,7 @@ function HistCard({ figure, profile }) {
   );
 }
 
-export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev }) {
+export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev, isLoadingNext = false }) {
   const life = data.lives[currentIndex];
   const meta = GRADE_META[data.soul_grade] || GRADE_META['오래된영혼'];
   const cardColor = life.color || meta.color;
@@ -205,7 +205,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
       </div>
 
       <div className="dot-progress">
-        {data.lives.map((_, i) => (
+        {Array.from({ length: data.total }, (_, i) => (
           <div
             key={i}
             className={`dot${i === currentIndex ? ' active' : i < currentIndex ? ' past' : ''}`}
@@ -361,10 +361,15 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         )}
         <button
           className="nav-btn next-btn"
-          style={{ backgroundColor: cardColor }}
+          style={{ backgroundColor: isLoadingNext ? '#4a4460' : cardColor, opacity: isLoadingNext ? 0.75 : 1 }}
           onClick={handleNext}
+          disabled={isLoadingNext}
         >
-          {currentIndex < data.lives.length - 1 ? '다음 전생 →' : '여정 마치기 ✦'}
+          {isLoadingNext
+            ? '탐험 중...'
+            : currentIndex < data.total - 1
+            ? '다음 전생 →'
+            : '여정 마치기 ✦'}
         </button>
       </div>
 
