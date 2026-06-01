@@ -154,7 +154,7 @@ export default async function handler(req, res) {
 
 위 정보로 ${lifeIndex}번째 전생 1개를 JSON으로 생성하세요. 시드값 ${seedKey}을 기반으로 항상 동일한 결과를 반환하세요.`;
 
-  console.log(`[request] name=${name} hash=${hash} lifeIndex=${lifeIndex}/${totalLives}`);
+  console.log(`[request] name=${name} hash=${hash} lifeIndex=${lifeIndex}/${totalLives} usedFigures=${JSON.stringify(usedFigures || [])}`);
 
   try {
     const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
