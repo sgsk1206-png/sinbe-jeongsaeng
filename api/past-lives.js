@@ -1,3 +1,5 @@
+import { calculateManseryeok, sinsalToTrait } from '../src/utils/manseryeok.js';
+
 // hash 기반 전생 횟수 결정 (App.jsx와 동일 로직)
 function getTotalLives(hash) {
   const n = parseInt(hash, 16);
@@ -145,12 +147,33 @@ export default async function handler(req, res) {
     ? `\n이미 사용된 역사 인물 (절대 중복 금지): ${usedFigures.join(', ')}`
     : '';
 
+  // 사주팔자·오행·신살 계산
+  let sajuSection = '';
+  try {
+    const isLunar = dateType === 'lunar';
+    const manse = calculateManseryeok(year, month, day, hour, isLunar);
+    const { saju, ohaeng, dominant, sinsal } = manse;
+    const traits = sinsalToTrait(sinsal);
+    sajuSection = `
+이 사람의 사주 분석:
+- 사주팔자: ${saju.year}년 ${saju.month}월 ${saju.day}일 ${saju.hour}시
+- 오행 비율: 목${ohaeng.목}% 화${ohaeng.화}% 토${ohaeng.토}% 금${ohaeng.금}% 수${ohaeng.수}%
+- 가장 강한 오행: ${dominant}
+- 신살: ${sinsal.length > 0 ? sinsal.join(', ') : '없음'}${traits.length > 0 ? `\n- 신살 특성: ${traits.join(' / ')}` : ''}
+- 이 사주 특성을 반드시 전생 설정에 반영할 것:
+  - 오행이 강한 요소 → 전생 직업/그룹 결정에 반영
+  - 신살 특성 → 전생 성격/최후에 반영`;
+    console.log(`[manse] dominant=${dominant} sinsal=${sinsal.join(',')} saju=${saju.year}/${saju.month}/${saju.day}/${saju.hour}`);
+  } catch (e) {
+    console.warn('[manse] calculation failed:', e.message);
+  }
+
   const userMessage = `이름: ${name}
 생년월일: ${dateType === 'lunar' ? '음력' : '양력'} ${year}년 ${month}월 ${day}일
 태어난 시: ${hour === 'unknown' ? '모름' : hour}
 결정론적 시드값: ${seedKey}
 총 전생 횟수: ${totalLives}회 중 ${lifeIndex}번째 전생
-영혼 등급: ${soulGrade}${usedFiguresList}
+영혼 등급: ${soulGrade}${usedFiguresList}${sajuSection}
 
 위 정보로 ${lifeIndex}번째 전생 1개를 JSON으로 생성하세요. 시드값 ${seedKey}을 기반으로 항상 동일한 결과를 반환하세요.`;
 
