@@ -122,14 +122,24 @@ function hanjaFontSize(hanja) {
   return '48px';
 }
 
+// 괄호 앞까지만 추출 — "懶翁禪師 (속명: 元惠)" → "懶翁禪師"
+function stripHanjaParens(hanja) {
+  return hanja.split('(')[0].trim();
+}
+
 function HistCard({ figure, profile }) {
   const theme = HIST_THEME[figure];
   // HIST_THEME 미등록 시 historical_profile.name_hanja 자동 활용
-  const hanja      = theme?.hanja        || profile?.name_hanja  || '';
+  const rawHanja   = theme?.hanja        || profile?.name_hanja  || '';
+  const hanja      = stripHanjaParens(rawHanja); // 괄호 이후 제거
   const year       = theme?.year         || profile?.birth_death || '';
   const bg         = theme?.bg           || '#160a28';
   const color      = theme?.color        || '#a080cc';
   const lightColor = lightenColor(color);
+
+  // 중앙 정렬·width 100% 공통 스타일
+  const centerStyle = { width: '100%', textAlign: 'center', display: 'block' };
+
   return (
     <div
       className="hist-img-wrap"
@@ -139,6 +149,7 @@ function HistCard({ figure, profile }) {
         // 한자 있음: 한자(크게) + 한글 이름
         <>
           <span style={{
+            ...centerStyle,
             fontSize: hanjaFontSize(hanja),
             fontWeight: 300,
             letterSpacing: '8px',
@@ -150,6 +161,7 @@ function HistCard({ figure, profile }) {
             {hanja}
           </span>
           <span style={{
+            ...centerStyle,
             fontSize: '22px',
             fontWeight: 600,
             letterSpacing: '4px',
@@ -162,6 +174,7 @@ function HistCard({ figure, profile }) {
       ) : (
         // 한자 없음: 한글 이름 크게
         <span style={{
+          ...centerStyle,
           fontSize: '32px',
           fontWeight: 600,
           letterSpacing: '4px',
@@ -172,7 +185,7 @@ function HistCard({ figure, profile }) {
         </span>
       )}
       {year && (
-        <span style={{ fontSize: '12px', letterSpacing: '2px', color: lightColor, opacity: 0.55 }}>
+        <span style={{ ...centerStyle, fontSize: '12px', letterSpacing: '2px', color: lightColor, opacity: 0.55 }}>
           {year}
         </span>
       )}
