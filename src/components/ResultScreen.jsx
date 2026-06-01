@@ -13,31 +13,43 @@ const HIST_THEME = {
 const HIST_THEME_DEFAULT = { bg: '#0d0920', color: '#a080cc', hanja: '', year: '' };
 
 // ── 그룹+성별 → 캐릭터 이미지 매핑 ──
+// getCharImage는 `${group}_${gender}` 키만 사용 (12그룹 × 2성별 = 24조합)
+// 전용 파일 없는 조합은 동일 그룹 반대 성별 이미지로 대체
 const GROUP_IMAGE = {
+  // ── fantasy ──
   fantasy_여:     ['gumiho_f_1.jpg'],
   fantasy_남:     ['jeoseungsaja_m_1.jpg'],
+  // ── warrior ──
   warrior_남:     ['mushin_m_1.jpg'],
   warrior_여:     ['mushin_f_1.jpg'],
+  // ── shaman ── (여성 전용 파일 없음 → 남성 이미지 fallback)
   shaman_남:      ['musokin_m_1.jpg'],
   shaman_여:      ['musokin_m_1.jpg'],
+  // ── entertainer ── (남성 전용 파일 없음 → 여성 이미지 fallback)
   entertainer_여: ['gisaeng_f_1.jpg'],
   entertainer_남: ['gisaeng_f_1.jpg'],
+  // ── commoner ── (남성 전용 파일 없음 → 여성 이미지 fallback)
   commoner_여:    ['nobi_f_1.jpg'],
   commoner_남:    ['nobi_f_1.jpg'],
+  // ── scholar ──
   scholar_남:     ['uiwon_m_1.jpg'],
   scholar_여:     ['uiwon_f_1.jpg'],
+  // ── royal ──
   royal_남:       ['king_m_1.jpg'],
-  royal_여:       ['king_f_1.jpg'],   // 기본 여성 왕족
-  royal_여_공주:  ['king_f_1.jpg'],
-  royal_여_신라:  ['king_f_2.jpg'],
+  royal_여:       ['king_f_1.jpg'],
+  // ── noble ──
   noble_남:       ['yangban_m_1.jpg'],
   noble_여:       ['yangban_f_1.jpg'],
+  // ── monk ──
   monk_남:        ['monk_m_1.jpg'],
   monk_여:        ['monk_f_1.jpg'],
+  // ── court ── (남성 전용 파일 없음 → 여성 이미지 fallback)
   court_여:       ['gungnyeo_f_1.png'],
   court_남:       ['gungnyeo_f_1.png'],
+  // ── outlaw ──
   outlaw_남:      ['rebel_m_1.png'],
   outlaw_여:      ['rebel_f_1.jpg'],
+  // ── outcast ──
   outcast_남:     ['outcast_m_1.jpg'],
   outcast_여:     ['outcast_f_1.jpg'],
 };
