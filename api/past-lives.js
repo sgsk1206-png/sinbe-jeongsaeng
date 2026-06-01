@@ -181,8 +181,17 @@ export default async function handler(req, res) {
 
   console.log(`[request] name=${name} hash=${hash} lifeIndex=${lifeIndex}/${totalLives} usedFigures=${JSON.stringify(usedFigures || [])}`);
 
-  try {
-    const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  // 에러 위치 주변 컨텍스트 추출 (파싱 실패 디버깅용)
+  function parseErrContext(str, errMsg) {
+    const m = errMsg.match(/position (\d+)/);
+    if (!m) return str.slice(0, 200);
+    const pos = parseInt(m[1]);
+    return `...${str.slice(Math.max(0, pos - 60), pos + 80)}...`;
+  }
+
+  // OpenRouter 호출 (maxTokens 가변)
+  async function callOpenRouter(maxTokens) {
+    return fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -192,7 +201,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'anthropic/claude-sonnet-4-5',
-        max_tokens: 1500,
+        max_tokens: maxTokens,
         temperature: 0,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
@@ -200,64 +209,10 @@ export default async function handler(req, res) {
         ],
       }),
     });
+  }
 
-    const rawText = await openrouterRes.text();
-    console.log(`[openrouter] status=${openrouterRes.status}`);
-    console.log(`[openrouter] rawText(first 800):`, rawText.slice(0, 800));
-
-    if (!openrouterRes.ok) {
-      console.error(`[openrouter] HTTP error ${openrouterRes.status}:`, rawText.slice(0, 400));
-      let errMsg = rawText;
-      try {
-        const errJson = JSON.parse(rawText);
-        errMsg = errJson.error?.message || errJson.message || rawText;
-      } catch {}
-      return res.status(502).json({ error: `OpenRouter 오류 (${openrouterRes.status}): ${errMsg.slice(0, 300)}` });
-    }
-
-    let result;
-    try {
-      result = JSON.parse(rawText);
-    } catch (parseErr) {
-      console.error('[openrouter] wrapper JSON parse failed:', parseErr.message);
-      console.error('[openrouter] rawText was:', rawText.slice(0, 500));
-      return res.status(502).json({ error: `OpenRouter 응답 파싱 실패: ${rawText.slice(0, 200)}` });
-    }
-
-    const text = result.choices?.[0]?.message?.content;
-    if (!text) {
-      console.error('[openrouter] empty content. result:', JSON.stringify(result).slice(0, 300));
-      return res.status(502).json({ error: 'AI 응답이 비어있습니다.' });
-    }
-
-    console.log(`[content] first 500:`, text.slice(0, 500));
-
-    // 첫 번째 { 부터 마지막 } 까지 추출 (JSON 잘림 대비)
-    const start = text.indexOf('{');
-    const end   = text.lastIndexOf('}');
-    if (start === -1 || end === -1 || end < start) {
-      console.error('[parse] no JSON braces found:', text.slice(0, 300));
-      return res.status(502).json({ error: `AI 응답에서 JSON을 찾지 못했습니다: ${text.slice(0, 200)}` });
-    }
-    const jsonStr = text.slice(start, end + 1);
-    console.log(`[parse] extracted JSON(first 400):`, jsonStr.slice(0, 400));
-
-    let data;
-    try {
-      data = JSON.parse(jsonStr);
-    } catch (parseErr) {
-      console.error('[parse] JSON.parse failed:', parseErr.message);
-      console.error('[parse] jsonStr was:', jsonStr.slice(0, 500));
-      return res.status(502).json({ error: `응답 JSON 파싱 실패: ${parseErr.message}` });
-    }
-
-    // group/gender 누락 또는 잘못된 값 자동 보완
-    const life = data.life;
-    if (!life) {
-      console.error('[parse] data.life is missing. data:', JSON.stringify(data).slice(0, 300));
-      return res.status(502).json({ error: 'AI 응답에 life 필드가 없습니다.' });
-    }
-
+  // 파싱된 life 객체 보정 (group/gender 자동 보완)
+  function normalizeLife(life) {
     if (!life.group || !VALID_GROUPS.includes(life.group)) {
       const inferred = inferGroup(life.identity);
       console.log(`[inferGroup] "${life.identity}" → ${inferred} (was: "${life.group}")`);
@@ -267,9 +222,104 @@ export default async function handler(req, res) {
       life.gender = '남';
       console.log(`[inferGender] gender missing for "${life.name}", defaulting to 남`);
     }
+    return life;
+  }
 
-    console.log(`[success] lifeIndex=${lifeIndex} name=${life.name} group=${life.group} gender=${life.gender}`);
-    return res.json({ life });
+  // 시도별 max_tokens: 1회차 2000, 재시도(2회차) 2800
+  const MAX_ATTEMPTS = 2;
+  const TOKENS_PER_ATTEMPT = [2000, 2800];
+
+  try {
+    let lastErr = '알 수 없는 오류';
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const maxTokens = TOKENS_PER_ATTEMPT[attempt - 1];
+      if (attempt > 1) console.warn(`[retry] attempt=${attempt} maxTokens=${maxTokens}`);
+
+      // ── 1. OpenRouter 호출 ──
+      const openrouterRes = await callOpenRouter(maxTokens);
+      const rawText = await openrouterRes.text();
+      console.log(`[openrouter] attempt=${attempt} status=${openrouterRes.status}`);
+
+      if (!openrouterRes.ok) {
+        // HTTP 오류는 재시도해도 소용없음 → 즉시 반환
+        let errMsg = rawText;
+        try { errMsg = JSON.parse(rawText)?.error?.message || rawText; } catch {}
+        console.error(`[openrouter] HTTP error ${openrouterRes.status}:`, rawText.slice(0, 400));
+        return res.status(502).json({ error: `OpenRouter 오류 (${openrouterRes.status}): ${errMsg.slice(0, 300)}` });
+      }
+
+      // ── 2. OpenRouter 래퍼 JSON 파싱 ──
+      let result;
+      try {
+        result = JSON.parse(rawText);
+      } catch (e) {
+        console.error('[openrouter] wrapper parse failed:', e.message, rawText.slice(0, 300));
+        return res.status(502).json({ error: `OpenRouter 응답 파싱 실패: ${rawText.slice(0, 200)}` });
+      }
+
+      // ── 3. 콘텐츠 추출 + finish_reason 확인 ──
+      const text = result.choices?.[0]?.message?.content;
+      const finishReason = result.choices?.[0]?.finish_reason ?? 'unknown';
+      console.log(`[content] attempt=${attempt} finish_reason=${finishReason} length=${text?.length ?? 0}`);
+      console.log(`[content] full:`, text); // 전체 출력 — position 540 주변 확인용
+
+      if (!text) {
+        lastErr = 'AI 응답이 비어있습니다.';
+        console.error('[content] empty. result:', JSON.stringify(result).slice(0, 300));
+        continue; // 재시도
+      }
+
+      if (finishReason === 'length') {
+        console.warn(`[content] TRUNCATED at max_tokens=${maxTokens} — will retry with more tokens`);
+        lastErr = `응답이 토큰 한도(${maxTokens})에서 잘렸습니다.`;
+        // 마지막 시도가 아니면 재시도
+        if (attempt < MAX_ATTEMPTS) continue;
+      }
+
+      // ── 4. AI 응답 내부 JSON 추출 ──
+      const start = text.indexOf('{');
+      const end   = text.lastIndexOf('}');
+      if (start === -1 || end === -1 || end < start) {
+        lastErr = `AI 응답에서 JSON을 찾지 못했습니다.`;
+        console.error('[parse] no JSON braces. text:', text.slice(0, 400));
+        if (attempt < MAX_ATTEMPTS) continue;
+        return res.status(502).json({ error: lastErr });
+      }
+      const jsonStr = text.slice(start, end + 1);
+      console.log(`[parse] jsonStr length=${jsonStr.length} first400:`, jsonStr.slice(0, 400));
+
+      // ── 5. 내부 JSON 파싱 ──
+      let data;
+      try {
+        data = JSON.parse(jsonStr);
+      } catch (parseErr) {
+        lastErr = `응답 JSON 파싱 실패: ${parseErr.message}`;
+        console.error(`[parse] FAILED attempt=${attempt}:`, parseErr.message);
+        console.error('[parse] error context:', parseErrContext(jsonStr, parseErr.message));
+        console.error('[parse] jsonStr full:', jsonStr); // 전체 출력
+        if (attempt < MAX_ATTEMPTS) {
+          console.warn(`[retry] parse failed (finish_reason=${finishReason}), retrying with maxTokens=${TOKENS_PER_ATTEMPT[attempt]}`);
+          continue;
+        }
+        return res.status(502).json({ error: lastErr });
+      }
+
+      // ── 6. life 필드 검증 + 보정 ──
+      if (!data.life) {
+        lastErr = 'AI 응답에 life 필드가 없습니다.';
+        console.error('[parse] data.life missing. data:', JSON.stringify(data).slice(0, 300));
+        if (attempt < MAX_ATTEMPTS) continue;
+        return res.status(502).json({ error: lastErr });
+      }
+
+      const life = normalizeLife(data.life);
+      console.log(`[success] attempt=${attempt} lifeIndex=${lifeIndex} name=${life.name} group=${life.group} gender=${life.gender}`);
+      return res.json({ life });
+    }
+
+    // 모든 재시도 소진
+    return res.status(502).json({ error: lastErr });
 
   } catch (err) {
     console.error('[unexpected]', err.message);
