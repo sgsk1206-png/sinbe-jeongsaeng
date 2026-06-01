@@ -43,11 +43,11 @@ function setCachedLife(hash, index, life) {
   try { localStorage.setItem(`${CACHE_PREFIX}${hash}_${index}`, JSON.stringify(life)); } catch {}
 }
 
-async function fetchLife({ name, dateType, year, month, day, hour, hash, lifeIndex, totalLives, soulGrade }) {
+async function fetchLife({ name, dateType, year, month, day, hour, hash, lifeIndex, totalLives, soulGrade, usedFigures }) {
   const res = await fetch('/api/past-lives', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, dateType, year, month, day, hour, hash, lifeIndex, totalLives, soulGrade }),
+    body: JSON.stringify({ name, dateType, year, month, day, hour, hash, lifeIndex, totalLives, soulGrade, usedFigures }),
   });
   const data = await res.json();
   if (!res.ok || data.error) throw new Error(data.error || `서버 오류 (${res.status})`);
@@ -131,7 +131,12 @@ export default function App() {
         if (cached) {
           nextLife = cached;
         } else {
-          nextLife = await fetchLife({ ...requestParams, lifeIndex });
+          // 이미 로드된 전생들의 historical_figure 목록 수집 (중복 방지용)
+          const usedFigures = pastLives.lives
+            .filter(Boolean)
+            .map(l => l.historical_figure)
+            .filter(Boolean);
+          nextLife = await fetchLife({ ...requestParams, lifeIndex, usedFigures });
           setCachedLife(requestParams.hash, lifeIndex, nextLife);
         }
       }
