@@ -87,16 +87,6 @@ function eraDisplay(life) {
 function CharImage({ src, identity, name, shortName, color }) {
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
-      {/* 디버그: src 값 화면 표시 */}
-      <span style={{
-        position: 'absolute', top: 4, left: 4, right: 4,
-        fontSize: '9px', color: 'rgba(255,255,0,0.85)',
-        background: 'rgba(0,0,0,0.6)', padding: '2px 4px',
-        borderRadius: 3, zIndex: 10, wordBreak: 'break-all',
-        lineHeight: 1.4, pointerEvents: 'none',
-      }}>
-        {src || '(empty)'}
-      </span>
       <img
         key={src}
         className="char-img"
