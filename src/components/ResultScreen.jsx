@@ -178,9 +178,9 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
       .forEach((src) => { const img = new Image(); img.src = src; });
   }, [currentIndex, data.lives]);
 
-  // 페이지 전환 시 항상 최상단부터 표시
-  const handleNext = () => { window.scrollTo(0, 0); onNext(); };
-  const handlePrev = () => { window.scrollTo(0, 0); onPrev(); };
+  // 페이지 전환은 App.jsx의 onNext/onPrev 내부에서 scrollTo 처리
+  const handleNext = () => { onNext(); };
+  const handlePrev = () => { onPrev(); };
 
   return (
     <div className="result-screen">
@@ -351,10 +351,15 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         )}
         <button
           className="nav-btn next-btn"
-          style={{ backgroundColor: cardColor }}
+          style={{ backgroundColor: isLoadingNext ? `${cardColor}80` : cardColor }}
           onClick={handleNext}
+          disabled={isLoadingNext}
         >
-          {currentIndex < data.total - 1 ? '다음 전생 →' : '여정 마치기 ✦'}
+          {isLoadingNext
+            ? '탐험 중...'
+            : currentIndex < data.total - 1
+            ? '다음 전생 →'
+            : '여정 마치기 ✦'}
         </button>
       </div>
 
