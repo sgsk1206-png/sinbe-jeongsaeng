@@ -146,13 +146,18 @@ export function calculateManseryeok(year, month, day, hour, isLunar) {
   };
 }
 
-// 오행별 전생 그룹 매핑
+// 오행별 전생 그룹 매핑 (SYSTEM_PROMPT 오행 섹션과 일치)
+// 목: 구미호(fantasy)/선비(scholar)
+// 화: 무속인(shaman)/용사(warrior)
+// 토: 선비(scholar)/귀부인(noble)  ← 토=monk 오류 수정
+// 금: 무인(warrior)/암행어사(scholar)  ← 금=royal 오류 수정
+// 수: 이무기(fantasy)/기생(entertainer)
 export function ohaengToGroup(dominant) {
   const map = {
-    목: ['scholar', 'noble'],
-    화: ['warrior', 'outlaw'],
-    토: ['commoner', 'monk'],
-    금: ['royal', 'shaman'],
+    목: ['fantasy', 'scholar'],
+    화: ['shaman', 'warrior'],
+    토: ['scholar', 'noble'],
+    금: ['warrior', 'scholar'],
     수: ['fantasy', 'entertainer'],
   };
   return map[dominant] || ['commoner'];
