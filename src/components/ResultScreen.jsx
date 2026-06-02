@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 // ── 역사 인물 카드 테마 ──
 const HIST_THEME = {
@@ -104,14 +104,32 @@ function eraDisplay(life) {
 }
 
 function CharImage({ src, identity, name, shortName, color }) {
+  // 같은 파일명의 .mp4 존재 시 영상으로 표시, 없으면 이미지 fallback
+  const videoSrc = src ? src.replace(/\.[^.]+$/, '.mp4') : null;
+  const [videoFailed, setVideoFailed] = useState(false);
+  const showVideo = !!videoSrc && !videoFailed;
+
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
-      <img
-        key={src}
-        className="char-img"
-        src={src || ''}
-        alt={`${identity} ${name}`}
-      />
+      {showVideo ? (
+        <video
+          key={videoSrc}
+          className="char-img"
+          src={videoSrc}
+          autoPlay
+          loop
+          muted
+          playsInline
+          onError={() => setVideoFailed(true)}
+        />
+      ) : (
+        <img
+          key={src}
+          className="char-img"
+          src={src || ''}
+          alt={`${identity} ${name}`}
+        />
+      )}
       <div className="char-img-placeholder">
         <span className="char-placeholder-identity">{identity}</span>
         <span className="char-placeholder-name" style={{ color }}>{shortName}</span>
