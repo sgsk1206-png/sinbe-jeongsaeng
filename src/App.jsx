@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import StarBackground from './components/StarBackground';
 import InputScreen from './components/InputScreen';
 import ResultScreen from './components/ResultScreen';
@@ -85,6 +85,53 @@ export default function App() {
   const [error, setError] = useState(null);
   const [isLoadingNext, setIsLoadingNext] = useState(false);
   const [requestParams, setRequestParams] = useState(null);
+  // prefetchedLife: null | { index: number(0-based), life: object }
+  const [prefetchedLife, setPrefetchedLife] = useState(null);
+  // 현재 목표 프리페치 인덱스 — race condition 방지용
+  const prefetchTargetRef = useRef(null);
+
+  // ── 백그라운드 프리페치 ──
+  // UI 블로킹 없음. 오류는 조용히 무시 (handleNext에서 재시도).
+  async function triggerPrefetch(currentIndex, livesSnapshot, params) {
+    if (!params || IS_MOCK) return;
+    const nextIndex = currentIndex + 1; // 0-based
+    if (nextIndex >= params.totalLives) return; // 마지막 전생이면 프리페치 안 함
+    if (livesSnapshot[nextIndex]) return;       // 이미 로드됐으면 스킵
+
+    const lifeIndex = nextIndex + 1; // API는 1-based
+    prefetchTargetRef.current = nextIndex;       // 현재 목표 업데이트
+
+    // 캐시 확인
+    const cached = getCachedLife(params.hash, lifeIndex);
+    if (cached) {
+      if (prefetchTargetRef.current === nextIndex) {
+        setPrefetchedLife({ index: nextIndex, life: cached });
+        console.log(`[prefetch] cache hit index=${nextIndex}`);
+      }
+      return;
+    }
+
+    // usedFigures: 현재까지 로드된 전생들의 historical_figure
+    const usedFigures = livesSnapshot
+      .filter(Boolean)
+      .map(l => l.historical_figure)
+      .filter(Boolean);
+
+    console.log(`[prefetch] start index=${nextIndex} lifeIndex=${lifeIndex} usedFigures=${JSON.stringify(usedFigures)}`);
+    try {
+      const life = await fetchLife({ ...params, lifeIndex, usedFigures });
+      setCachedLife(params.hash, lifeIndex, life);
+      // 여전히 이 인덱스가 목표일 때만 반영 (race condition 방지)
+      if (prefetchTargetRef.current === nextIndex) {
+        setPrefetchedLife({ index: nextIndex, life });
+        console.log(`[prefetch] done index=${nextIndex} name=${life.name}`);
+      } else {
+        console.log(`[prefetch] stale result discarded index=${nextIndex}`);
+      }
+    } catch (e) {
+      console.warn(`[prefetch] failed index=${nextIndex}:`, e.message);
+    }
+  }
 
   const handleSubmit = async (formData) => {
     const { name, dateType, year, month, day, hour } = formData;
@@ -97,6 +144,8 @@ export default function App() {
     const params = { name, dateType, year, month, day, hour, hash, totalLives, soulGrade };
 
     setRequestParams(params);
+    setPrefetchedLife(null);
+    prefetchTargetRef.current = null;
     setScreen('loading');
 
     try {
@@ -106,7 +155,6 @@ export default function App() {
         await new Promise(r => setTimeout(r, 800));
         life0 = MOCK_PAST_LIVES.lives[0];
       } else {
-        // 캐시 확인 먼저
         const cached = getCachedLife(hash, 1);
         if (cached) {
           life0 = cached;
@@ -116,9 +164,13 @@ export default function App() {
         }
       }
 
-      setPastLives({ total: totalLives, soul_grade: soulGrade, lives: [life0] });
+      const lives = [life0];
+      setPastLives({ total: totalLives, soul_grade: soulGrade, lives });
       setCurrentLife(0);
       setScreen('result');
+
+      // 첫 전생 표시 즉시 다음 전생 프리페치 시작
+      triggerPrefetch(0, lives, params);
     } catch (err) {
       setError(err.message);
       setScreen('input');
@@ -134,13 +186,28 @@ export default function App() {
       return;
     }
 
-    // 이미 로드된 전생이면 바로 이동
+    // ① 이미 로드된 전생이면 바로 이동
     if (pastLives.lives[nextIndex]) {
       setCurrentLife(nextIndex);
+      setPrefetchedLife(null);
+      triggerPrefetch(nextIndex, pastLives.lives, requestParams);
       return;
     }
 
-    // 아직 없으면 API 호출
+    // ② 프리페치 완료된 데이터가 있으면 즉시 사용 (로딩 오버레이 없음)
+    if (prefetchedLife && prefetchedLife.index === nextIndex) {
+      const nextLife = prefetchedLife.life;
+      const newLives = [...pastLives.lives];
+      newLives[nextIndex] = nextLife;
+      setPrefetchedLife(null);
+      setPastLives(prev => ({ ...prev, lives: newLives }));
+      setCurrentLife(nextIndex);
+      // 그 다음 전생도 프리페치
+      triggerPrefetch(nextIndex, newLives, requestParams);
+      return;
+    }
+
+    // ③ 프리페치 없으면 기존 로딩 방식
     setIsLoadingNext(true);
     try {
       let nextLife;
@@ -154,7 +221,6 @@ export default function App() {
         if (cached) {
           nextLife = cached;
         } else {
-          // 이미 로드된 전생들의 historical_figure 목록 수집 (중복 방지용)
           const usedFigures = pastLives.lives
             .filter(Boolean)
             .map(l => l.historical_figure)
@@ -164,12 +230,12 @@ export default function App() {
         }
       }
 
-      setPastLives(prev => {
-        const newLives = [...prev.lives];
-        newLives[nextIndex] = nextLife;
-        return { ...prev, lives: newLives };
-      });
+      const newLives = [...pastLives.lives];
+      newLives[nextIndex] = nextLife;
+      setPastLives(prev => ({ ...prev, lives: newLives }));
       setCurrentLife(nextIndex);
+      // 로딩 완료 후에도 그 다음 전생 프리페치
+      triggerPrefetch(nextIndex, newLives, requestParams);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -189,6 +255,8 @@ export default function App() {
     setError(null);
     setIsLoadingNext(false);
     setRequestParams(null);
+    setPrefetchedLife(null);
+    prefetchTargetRef.current = null;
   };
 
   return (
@@ -220,7 +288,6 @@ export default function App() {
       {/* ── 다음 전생 로딩 오버레이 ── */}
       {isLoadingNext && (
         <div className="life-loading-overlay">
-          {/* 별 파티클 */}
           <div className="life-loading-stars" aria-hidden="true">
             {OVERLAY_STARS.map((st, i) => (
               <div
@@ -238,8 +305,6 @@ export default function App() {
               />
             ))}
           </div>
-
-          {/* 중앙 콘텐츠 */}
           <div className="life-loading-center">
             <div className="life-loading-orb-wrap">
               <div className="life-loading-orbit life-loading-orbit-1" />
