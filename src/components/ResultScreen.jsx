@@ -55,13 +55,20 @@ const GROUP_IMAGE = {
 };
 
 // group + gender 조합으로 이미지 경로 반환
-// _1/_2 파일 모두 있으면 Math.random() < 0.5 로 50% 확률 선택
+// _1/_2 파일 모두 있으면 50:50으로 선택
+// ※ Math.random()은 React 리렌더마다 다른 값 반환 → 이미지 깜빡임 유발
+//    대신 life.name 기반 결정론적 해시 사용 → 같은 생애 = 항상 같은 이미지
 function getCharImage(life) {
   if (life.group && life.gender) {
     const key = `${life.group}_${life.gender}`;
     const files = GROUP_IMAGE[key];
     if (files?.length) {
-      const file = files.length > 1 && Math.random() < 0.5 ? files[1] : files[0];
+      let file = files[0];
+      if (files.length > 1) {
+        // name 글자 코드 합산 → 짝수/_2, 홀수/_1 (안정적 50:50 분포)
+        const seed = (life.name || '').split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+        file = seed % 2 === 0 ? files[1] : files[0];
+      }
       console.log(`[getCharImage] key=${key} selected=${file}`);
       return `/images/characters/${file}`;
     }
