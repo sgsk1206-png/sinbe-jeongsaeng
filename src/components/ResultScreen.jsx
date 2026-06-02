@@ -13,57 +13,57 @@ const HIST_THEME = {
 const HIST_THEME_DEFAULT = { bg: '#0d0920', color: '#a080cc', hanja: '', year: '' };
 
 // ── 그룹+성별 → 캐릭터 이미지 매핑 ──
+// 각 항목: [_1파일, _2파일] — _2가 있으면 50% 확률로 선택
 // getCharImage는 `${group}_${gender}` 키만 사용 (12그룹 × 2성별 = 24조합)
-// 전용 파일 없는 조합은 동일 그룹 반대 성별 이미지로 대체
 const GROUP_IMAGE = {
   // ── fantasy ──
-  fantasy_여:     ['gumiho_f_1.jpg'],
-  fantasy_남:     ['jeoseungsaja_m_1.jpg'],
+  fantasy_여:     ['gumiho_f_1.jpg',        'gumiho_f_2.jpg'],
+  fantasy_남:     ['jeoseungsaja_m_1.jpg',   'jeoseungsaja_m_2.jpg'],  // fallback: _1 유지
   // ── warrior ──
-  warrior_남:     ['mushin_m_1.jpg'],
-  warrior_여:     ['mushin_f_1.jpg'],
-  // ── shaman ── (여성 전용 파일 없음 → 남성 이미지 fallback)
-  shaman_남:      ['musokin_m_1.jpg'],
-  shaman_여:      ['musokin_m_1.jpg'],
-  // ── entertainer ── (남성 전용 파일 없음 → 여성 이미지 fallback)
-  entertainer_여: ['gisaeng_f_1.jpg'],
-  entertainer_남: ['gisaeng_f_1.jpg'],
-  // ── commoner ── (남성 전용 파일 없음 → 여성 이미지 fallback)
-  commoner_여:    ['nobi_f_1.jpg'],
-  commoner_남:    ['nobi_f_1.jpg'],
+  warrior_남:     ['mushin_m_1.jpg',         'mushin_m_2.jpg'],
+  warrior_여:     ['mushin_f_1.jpg',         'mushin_f_2.jpg'],
+  // ── shaman ──
+  shaman_남:      ['musokin_m_1.jpg',        'musokin_m_2.jpg'],
+  shaman_여:      ['shaman_f_1.png',         'shaman_f_2.jpg'],
+  // ── entertainer ──
+  entertainer_여: ['gisaeng_f_1.jpg',        'gisaeng_f_2.jpg'],
+  entertainer_남: ['entertainer_m_1.png',    'entertainer_m_2.jpg'],
+  // ── commoner ──
+  commoner_여:    ['commoner_f_1.png',       'commoner_f_2.jpg'],
+  commoner_남:    ['commoner_m_1.png',       'commoner_m_2.jpg'],
   // ── scholar ──
-  scholar_남:     ['uiwon_m_1.jpg'],
-  scholar_여:     ['uiwon_f_1.jpg'],
+  scholar_남:     ['uiwon_m_1.jpg',          'uiwon_m_2.jpg'],
+  scholar_여:     ['uiwon_f_1.jpg',          'uiwon_f_2.jpg'],
   // ── royal ──
-  royal_남:       ['king_m_1.jpg'],
-  royal_여:       ['king_f_1.jpg'],
+  royal_남:       ['king_m_1.jpg',           'king_m_2.jpg'],
+  royal_여:       ['king_f_1.jpg',           'king_f_2.jpg'],
   // ── noble ──
-  noble_남:       ['yangban_m_1.jpg'],
-  noble_여:       ['yangban_f_1.jpg'],
+  noble_남:       ['yangban_m_1.jpg',        'yangban_m_2.jpg'],
+  noble_여:       ['yangban_f_1.jpg',        'yangban_f_2.jpg'],
   // ── monk ──
-  monk_남:        ['monk_m_1.jpg'],
-  monk_여:        ['monk_f_1.jpg'],
-  // ── court ── (남성 전용 파일 없음 → 여성 이미지 fallback)
-  court_여:       ['gungnyeo_f_1.png'],
-  court_남:       ['gungnyeo_f_1.png'],
+  monk_남:        ['monk_m_1.jpg',           'monk_m_2.jpg'],
+  monk_여:        ['monk_f_1.jpg',           'monk_f_2.jpg'],
+  // ── court ──
+  court_여:       ['gungnyeo_f_1.png',       'gungnyeo_f_2.jpg'],
+  court_남:       ['court_m_1.png',          'court_m_2.jpg'],
   // ── outlaw ──
-  outlaw_남:      ['rebel_m_1.png'],
-  outlaw_여:      ['rebel_f_1.jpg'],
+  outlaw_남:      ['rebel_m_1.png',          'rebel_m_2.jpg'],
+  outlaw_여:      ['rebel_f_1.jpg',          'rebel_f_2.jpg'],
   // ── outcast ──
-  outcast_남:     ['outcast_m_1.jpg'],
-  outcast_여:     ['outcast_f_1.jpg'],
+  outcast_남:     ['outcast_m_1.jpg',        'outcast_m_2.jpg'],
+  outcast_여:     ['outcast_f_1.jpg',        'outcast_f_2.jpg'],
 };
 
-// group + gender 조합으로 이미지 경로 반환 (없으면 image_file fallback)
+// group + gender 조합으로 이미지 경로 반환
+// _1/_2 파일 모두 있으면 Math.random() < 0.5 로 50% 확률 선택
 function getCharImage(life) {
   if (life.group && life.gender) {
     const key = `${life.group}_${life.gender}`;
     const files = GROUP_IMAGE[key];
-    console.log(`[getCharImage] group=${life.group} gender=${life.gender} key=${key} files=${JSON.stringify(files)}`);
-    if (files?.[0]) {
-      const path = `/images/characters/${files[0]}`;
-      console.log(`[getCharImage] resolved path: ${path}`);
-      return path;
+    if (files?.length) {
+      const file = files.length > 1 && Math.random() < 0.5 ? files[1] : files[0];
+      console.log(`[getCharImage] key=${key} selected=${file}`);
+      return `/images/characters/${file}`;
     }
   }
   console.log(`[getCharImage] fallback image_file=${life.image_file}`);
