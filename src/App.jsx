@@ -44,18 +44,17 @@ function hashInput(name, dateType, year, month, day, hour) {
   return (h >>> 0).toString(16).padStart(8, '0');
 }
 
-// hash 기반 전생 횟수 결정 (api/past-lives.js와 동일 로직)
+// hash 기반 전생 횟수 결정 (api/past-lives.js와 동일 로직) — 최대 3회
 function getTotalLives(hash) {
   const n = parseInt(hash, 16);
   if (n % 50 === 7) return 1;
-  return 5 + (n % 3); // 5, 6, 또는 7
+  return 2 + (n % 2); // 2 또는 3
 }
 
 function getSoulGrade(total) {
   if (total === 1) return '첫번째생';
-  if (total <= 3)  return '어린영혼';
-  if (total <= 5)  return '오래된영혼';
-  return '고대영혼';
+  if (total === 2) return '어린영혼';
+  return '오래된영혼'; // 3
 }
 
 function getCachedLife(hash, index) {
