@@ -107,11 +107,26 @@ function CharImage({ src, identity, name, shortName, color }) {
   // 같은 파일명의 .mp4 존재 시 영상으로 표시, 없으면 이미지 fallback
   const videoSrc = src ? src.replace(/\.[^.]+$/, '.mp4') : null;
   const [videoFailed, setVideoFailed] = useState(false);
+  const [videoReady, setVideoReady] = useState(false);
   const showVideo = !!videoSrc && !videoFailed;
+
+  // .char-img 는 CSS에서 position:absolute;inset:0 으로 자동 겹침
 
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
-      {showVideo ? (
+      {/* 이미지: 항상 렌더. showVideo 시 placeholder 역할 — 영상 로드 전까지 표시 */}
+      <img
+        key={src}
+        className="char-img"
+        src={src || ''}
+        alt={`${identity} ${name}`}
+        style={showVideo ? {
+          opacity: videoReady ? 0 : 1,
+          transition: 'opacity 0.3s',
+        } : undefined}
+      />
+      {/* 영상: .mp4 있을 때만 렌더. controls 없음. 로드 전 opacity:0 */}
+      {showVideo && (
         <video
           key={videoSrc}
           className="char-img"
@@ -120,14 +135,12 @@ function CharImage({ src, identity, name, shortName, color }) {
           loop
           muted
           playsInline
+          onCanPlay={() => setVideoReady(true)}
           onError={() => setVideoFailed(true)}
-        />
-      ) : (
-        <img
-          key={src}
-          className="char-img"
-          src={src || ''}
-          alt={`${identity} ${name}`}
+          style={{
+            opacity: videoReady ? 1 : 0,
+            transition: 'opacity 0.3s',
+          }}
         />
       )}
       <div className="char-img-placeholder">
