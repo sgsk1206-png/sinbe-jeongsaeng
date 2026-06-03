@@ -314,7 +314,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         imageUrl: `${window.location.origin}/images/og-image.jpg`,
         link: { mobileWebUrl: url, webUrl: url },
       },
-      buttons: [{ title: '전생 탐험하기', link: { mobileWebUrl: url, webUrl: url } }],
+      buttons: [{ title: '공유 페이지 보기', link: { mobileWebUrl: url, webUrl: url } }],
     });
   };
 
