@@ -27,7 +27,15 @@ export default function InputScreen({ onSubmit, error }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!name.trim() || !year || !month || !day) return;
-    onSubmit({ name: name.trim(), dateType, year, month, day, hour });
+    // "01" → 1 등 문자열 앞자리 0 제거 → hash 생성 시 동일 입력 보장
+    onSubmit({
+      name: name.trim(),
+      dateType,
+      year:  parseInt(year,  10),
+      month: parseInt(month, 10),
+      day:   parseInt(day,   10),
+      hour,
+    });
   };
 
   return (
