@@ -1187,3 +1187,89 @@ input[type='number']::-webkit-inner-spin-button {
   transition: opacity 0.2s;
 }
 .share-cta-btn:hover { opacity: 0.88; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   공유 팝업 (ResultScreen)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.share-popup-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: life-overlay-in 0.22s ease;
+}
+
+.share-popup {
+  background: #12092a;
+  border: 1px solid rgba(140, 90, 200, 0.35);
+  border-radius: 16px;
+  padding: 24px 20px 20px;
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.share-popup-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  letter-spacing: 0.5px;
+}
+
+.share-popup-url {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(140,90,200,0.2);
+  border-radius: 8px;
+  padding: 8px 10px;
+  word-break: break-all;
+  text-align: center;
+}
+
+.share-popup-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-popup-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.share-popup-btn:hover { opacity: 0.85; }
+
+.share-popup-btn-copy {
+  background: rgba(120, 60, 200, 0.9);
+  color: #fff;
+}
+
+.share-popup-btn-kakao {
+  background: #FEE500;
+  color: #3C1E1E;
+}
+
+.share-popup-close {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 8px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.share-popup-close:hover { color: var(--text); }

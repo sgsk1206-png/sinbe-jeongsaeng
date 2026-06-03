@@ -3,9 +3,12 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
+  "rewrites": [
+    { "source": "/share/(.*)", "destination": "/" }
+  ],
   "functions": {
-    "api/past-lives.js": {
-      "maxDuration": 30
-    }
+    "api/past-lives.js":  { "maxDuration": 30 },
+    "api/share-save.js":  { "maxDuration": 10 },
+    "api/share-get.js":   { "maxDuration": 10 }
   }
 }

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { encodeShareData } from '../utils/share.js';
 
 // ── 역사 인물 카드 테마 ──
 const HIST_THEME = {
@@ -255,33 +254,68 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
   const handleNext = () => { onNext(); };
   const handlePrev = () => { onPrev(); };
 
-  // 공유 기능
-  const [toastVisible, setToastVisible] = useState(false);
+  // ── 공유 기능 ──
+  const [shareSaving, setShareSaving] = useState(false);
+  const [sharePopup, setSharePopup] = useState(null); // null | { url }
+  const [copyToast, setCopyToast] = useState(false);
+
   const handleShare = async () => {
-    const payload = {
-      userName,
-      life,
-      soulGrade: data.soul_grade,
-      total: data.total,
-    };
-    const encoded = encodeShareData(payload);
-    if (!encoded) return;
-    const url = `${window.location.origin}?data=${encodeURIComponent(encoded)}`;
+    if (shareSaving) return;
+    setShareSaving(true);
+    try {
+      const res = await fetch('/api/share-save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userName,
+          life,
+          soulGrade: data.soul_grade,
+          total: data.total,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || json.error) throw new Error(json.error || '저장 실패');
+      const url = `${window.location.origin}/share/${json.shareId}`;
+      setSharePopup({ url });
+    } catch (err) {
+      console.error('[share]', err.message);
+      alert(`공유 링크 생성 실패: ${err.message}`);
+    } finally {
+      setShareSaving(false);
+    }
+  };
+
+  const copyShareUrl = async (url) => {
     try {
       await navigator.clipboard.writeText(url);
     } catch {
-      // clipboard API 미지원 fallback
       const ta = document.createElement('textarea');
       ta.value = url;
-      ta.style.position = 'fixed';
-      ta.style.opacity = '0';
+      ta.style.cssText = 'position:fixed;opacity:0';
       document.body.appendChild(ta);
       ta.focus(); ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
     }
-    setToastVisible(true);
-    setTimeout(() => setToastVisible(false), 2200);
+    setCopyToast(true);
+    setTimeout(() => setCopyToast(false), 2200);
+  };
+
+  const shareToKakao = (url) => {
+    if (!window.Kakao?.Share) {
+      alert('카카오 공유를 사용할 수 없습니다');
+      return;
+    }
+    window.Kakao.Share.sendDefault({
+      objectType: 'feed',
+      content: {
+        title: `${userName}님의 전생 이야기`,
+        description: `${life.era} · ${life.identity?.split('(')[0].trim()}`,
+        imageUrl: `${window.location.origin}/images/og-image.jpg`,
+        link: { mobileWebUrl: url, webUrl: url },
+      },
+      buttons: [{ title: '전생 탐험하기', link: { mobileWebUrl: url, webUrl: url } }],
+    });
   };
 
   return (
@@ -466,16 +500,41 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
       </div>
 
       {/* 공유 버튼 */}
-      <button className="share-btn" onClick={handleShare}>
-        🔗 이 전생 공유하기
+      <button className="share-btn" onClick={handleShare} disabled={shareSaving}>
+        {shareSaving ? '링크 생성 중...' : '🔗 이 전생 공유하기'}
       </button>
 
       <p className="disclaimer">재미로 보는 전생 이야기입니다</p>
 
-      {/* 클립보드 복사 토스트 */}
-      {toastVisible && (
-        <div className="share-toast">✓ 링크가 복사됐습니다</div>
+      {/* 공유 팝업 */}
+      {sharePopup && (
+        <div className="share-popup-overlay" onClick={() => setSharePopup(null)}>
+          <div className="share-popup" onClick={e => e.stopPropagation()}>
+            <p className="share-popup-title">✦ 전생 공유하기</p>
+            <p className="share-popup-url">{sharePopup.url}</p>
+            <div className="share-popup-btns">
+              <button
+                className="share-popup-btn share-popup-btn-copy"
+                onClick={() => copyShareUrl(sharePopup.url)}
+              >
+                {copyToast ? '✓ 복사됐습니다!' : '🔗 링크 복사'}
+              </button>
+              {window.Kakao?.isInitialized?.() && (
+                <button
+                  className="share-popup-btn share-popup-btn-kakao"
+                  onClick={() => shareToKakao(sharePopup.url)}
+                >
+                  카카오톡 공유
+                </button>
+              )}
+            </div>
+            <button className="share-popup-close" onClick={() => setSharePopup(null)}>✕ 닫기</button>
+          </div>
+        </div>
       )}
+
+      {/* 복사 토스트 */}
+      {copyToast && <div className="share-toast">✓ 링크가 복사됐습니다</div>}
     </div>
   );
 }

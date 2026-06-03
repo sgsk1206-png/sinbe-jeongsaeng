@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import StarBackground from './components/StarBackground';
 import InputScreen from './components/InputScreen';
 import ResultScreen from './components/ResultScreen';
@@ -80,13 +80,30 @@ async function fetchLife({ name, dateType, year, month, day, hour, hash, lifeInd
 }
 
 export default function App() {
+  // ── Kakao SDK 초기화 ──
+  useEffect(() => {
+    const key = import.meta.env.VITE_KAKAO_JS_KEY;
+    if (key && window.Kakao && !window.Kakao.isInitialized()) {
+      window.Kakao.init(key);
+      console.log('[kakao] initialized');
+    }
+  }, []);
+
   // ── 공유 URL 감지 (초기 1회만 평가) ──
+  // 방식 A: /share/{shareId} → Redis 조회
+  // 방식 B: ?data={base64}  → 직접 디코딩 (하위 호환)
+  const [shareRouteId] = useState(() => {
+    const m = window.location.pathname.match(/^\/share\/([A-Z0-9]{4,10})$/);
+    return m ? m[1] : null;
+  });
   const [shareData] = useState(() => {
     const encoded = new URLSearchParams(window.location.search).get('data');
     return encoded ? decodeShareData(encoded) : null;
   });
   const [showShare, setShowShare] = useState(() => {
-    return !!new URLSearchParams(window.location.search).get('data');
+    const hasSharePath = /^\/share\/[A-Z0-9]{4,10}$/.test(window.location.pathname);
+    const hasDataParam = !!new URLSearchParams(window.location.search).get('data');
+    return hasSharePath || hasDataParam;
   });
 
   const [screen, setScreen] = useState('input');
@@ -277,12 +294,16 @@ export default function App() {
   };
 
   // 공유 URL로 접근한 경우 ShareScreen만 표시
-  if (showShare && shareData) {
+  if (showShare && (shareRouteId || shareData)) {
     return (
       <div className="app">
         <StarBackground />
         <div className="container">
-          <ShareScreen shareData={shareData} onStart={handleShareStart} />
+          <ShareScreen
+            shareId={shareRouteId}       // /share/{id} 방식
+            shareData={shareData}         // ?data= base64 방식 (하위 호환)
+            onStart={handleShareStart}
+          />
         </div>
         <div className="branding">신비의거울</div>
       </div>

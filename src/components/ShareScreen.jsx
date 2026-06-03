@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // ── 그룹+성별 → 이미지 매핑 (ResultScreen과 동일) ──
 const GROUP_IMAGE = {
@@ -34,8 +34,7 @@ function getCharImage(life) {
     const files = GROUP_IMAGE[key];
     if (files?.length) {
       const seed = (life.name || '').split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-      const file = files.length > 1 && seed % 2 === 0 ? files[1] : files[0];
-      return `/images/characters/${file}`;
+      return `/images/characters/${files.length > 1 && seed % 2 === 0 ? files[1] : files[0]}`;
     }
   }
   return life.image_file || '';
@@ -48,11 +47,11 @@ function lightenColor(hex, amount = 0.4) {
   return `rgb(${Math.round(r+(255-r)*amount)},${Math.round(g+(255-g)*amount)},${Math.round(b+(255-b)*amount)})`;
 }
 
-// 캐릭터 이미지 (영상 있으면 영상으로, 없으면 이미지)
+// 캐릭터 이미지/영상
 function ShareCharImage({ src, identity, shortName, color }) {
   const videoSrc = src ? src.replace(/\.[^.]+$/, '.mp4') : null;
   const [videoFailed, setVideoFailed] = useState(false);
-  const [videoReady, setVideoReady] = useState(false);
+  const [videoReady,  setVideoReady]  = useState(false);
   const showVideo = !!videoSrc && !videoFailed;
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
@@ -80,16 +79,14 @@ function ShareCharImage({ src, identity, shortName, color }) {
   );
 }
 
-export default function ShareScreen({ shareData, onStart }) {
-  const { userName, life, soulGrade } = shareData;
-  if (!life) return null;
-
-  const cardColor   = life.color || '#a080cc';
-  const lightColor  = lightenColor(cardColor);
-  const shortName   = life.name?.split(' ').at(-1) || '';
-  const shortIdent  = life.identity?.split('(')[0].trim() || '';
-  const imgSrc      = getCharImage(life);
-  const p           = life.historical_profile;
+// ── 실제 콘텐츠 표시 ──
+function ShareContent({ userName, life, soulGrade, onStart }) {
+  const cardColor  = life.color || '#a080cc';
+  const lightColor = lightenColor(cardColor);
+  const shortName  = life.name?.split(' ').at(-1) || '';
+  const shortIdent = life.identity?.split('(')[0].trim() || '';
+  const imgSrc     = getCharImage(life);
+  const p          = life.historical_profile;
 
   const eraText = (() => {
     if (life.birth_year && life.death_year) return `${life.birth_year}년 ~ ${life.death_year}년`;
@@ -109,12 +106,7 @@ export default function ShareScreen({ shareData, onStart }) {
       </div>
 
       {/* 캐릭터 이미지 */}
-      <ShareCharImage
-        src={imgSrc}
-        identity={shortIdent}
-        shortName={shortName}
-        color={cardColor}
-      />
+      <ShareCharImage src={imgSrc} identity={shortIdent} shortName={shortName} color={cardColor} />
 
       {/* 생애 카드 */}
       <div className="life-card" style={{ borderColor: `${cardColor}50` }}>
@@ -172,32 +164,30 @@ export default function ShareScreen({ shareData, onStart }) {
                 <span className="hist-divider-label">✨ 당신의 전생 기운과 닮은 인물</span>
               </div>
               <div className="hist-figure-row">
-                {/* 인물 카드 (텍스트 버전) */}
                 <div
                   className="hist-img-wrap"
                   style={{ background: '#160a28', border: `1px solid ${cardColor}40`, flexDirection: 'column', gap: '8px' }}
                 >
                   {p?.name_hanja ? (
                     <>
-                      <span style={{ fontSize: '40px', fontWeight: 300, letterSpacing: '8px', color: cardColor, opacity: 0.55, lineHeight: 1.1 }}>
+                      <span style={{ width:'100%', textAlign:'center', display:'block', fontSize:'40px', fontWeight:300, letterSpacing:'8px', color:cardColor, opacity:0.55, lineHeight:1.1 }}>
                         {p.name_hanja.split('(')[0].trim()}
                       </span>
-                      <span style={{ fontSize: '20px', fontWeight: 600, letterSpacing: '4px', color: lightColor }}>
+                      <span style={{ width:'100%', textAlign:'center', display:'block', fontSize:'20px', fontWeight:600, letterSpacing:'4px', color:lightColor }}>
                         {life.historical_figure}
                       </span>
                     </>
                   ) : (
-                    <span style={{ fontSize: '28px', fontWeight: 600, letterSpacing: '4px', color: lightColor }}>
+                    <span style={{ width:'100%', textAlign:'center', display:'block', fontSize:'28px', fontWeight:600, letterSpacing:'4px', color:lightColor }}>
                       {life.historical_figure}
                     </span>
                   )}
                   {p?.birth_death && (
-                    <span style={{ fontSize: '12px', letterSpacing: '2px', color: lightColor, opacity: 0.55 }}>
+                    <span style={{ width:'100%', textAlign:'center', display:'block', fontSize:'12px', letterSpacing:'2px', color:lightColor, opacity:0.55 }}>
                       {p.birth_death}
                     </span>
                   )}
                 </div>
-
                 <div className="hist-info">
                   <div className="hist-name-row">
                     <span className="hist-name">{life.historical_figure}</span>
@@ -237,5 +227,69 @@ export default function ShareScreen({ shareData, onStart }) {
 
       <p className="disclaimer">재미로 보는 전생 이야기입니다</p>
     </div>
+  );
+}
+
+// ── 로딩 화면 ──
+function ShareLoading() {
+  return (
+    <div className="share-screen" style={{ alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
+      <div className="loading-orb" />
+      <p className="loading-text" style={{ marginTop: 24 }}>전생의 기억을 불러오는 중...</p>
+      <p className="loading-sub">시간의 강을 거슬러 올라가고 있습니다</p>
+    </div>
+  );
+}
+
+// ── 에러/만료 화면 ──
+function ShareError({ onStart }) {
+  return (
+    <div className="share-screen" style={{ alignItems: 'center', textAlign: 'center', paddingTop: 60 }}>
+      <p style={{ fontSize: 40, marginBottom: 16 }}>🌌</p>
+      <p style={{ fontSize: 18, color: 'var(--text)', fontWeight: 600, marginBottom: 10 }}>
+        이미 사라진 전생이에요
+      </p>
+      <p style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 32 }}>
+        공유 링크가 만료되었거나 존재하지 않습니다.<br />
+        나의 전생을 직접 탐험해보세요.
+      </p>
+      <button className="share-cta-btn" style={{ background: '#7B2FBE', maxWidth: 280 }} onClick={onStart}>
+        나의 전생 탐험하기 →
+      </button>
+    </div>
+  );
+}
+
+// ── 메인 컴포넌트 ──
+// shareId: Redis ID (새 방식) — /share/{shareId} 경로로 접근 시
+// shareData: 직접 전달 (하위 호환 — 기존 ?data= base64 방식)
+export default function ShareScreen({ shareId = null, shareData = null, onStart }) {
+  const [resolved, setResolved] = useState(shareData);
+  const [loading,  setLoading]  = useState(!!shareId && !shareData);
+  const [error,    setError]    = useState(false);
+
+  useEffect(() => {
+    if (!shareId || shareData) return;
+    setLoading(true);
+    fetch(`/api/share-get?id=${shareId}`)
+      .then(r => r.json())
+      .then(d => {
+        if (d.error) { setError(true); return; }
+        setResolved(d);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [shareId, shareData]);
+
+  if (loading) return <ShareLoading />;
+  if (error || !resolved) return <ShareError onStart={onStart} />;
+
+  return (
+    <ShareContent
+      userName={resolved.userName}
+      life={resolved.life}
+      soulGrade={resolved.soulGrade}
+      onStart={onStart}
+    />
   );
 }
