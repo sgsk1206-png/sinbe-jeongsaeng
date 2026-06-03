@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { encodeShareData } from '../utils/share.js';
 
 // ── 역사 인물 카드 테마 ──
 const HIST_THEME = {
@@ -254,6 +255,35 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
   const handleNext = () => { onNext(); };
   const handlePrev = () => { onPrev(); };
 
+  // 공유 기능
+  const [toastVisible, setToastVisible] = useState(false);
+  const handleShare = async () => {
+    const payload = {
+      userName,
+      life,
+      soulGrade: data.soul_grade,
+      total: data.total,
+    };
+    const encoded = encodeShareData(payload);
+    if (!encoded) return;
+    const url = `${window.location.origin}?data=${encodeURIComponent(encoded)}`;
+    try {
+      await navigator.clipboard.writeText(url);
+    } catch {
+      // clipboard API 미지원 fallback
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    setToastVisible(true);
+    setTimeout(() => setToastVisible(false), 2200);
+  };
+
   return (
     <div className="result-screen">
       <div className="result-header">
@@ -435,7 +465,17 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         </button>
       </div>
 
+      {/* 공유 버튼 */}
+      <button className="share-btn" onClick={handleShare}>
+        🔗 이 전생 공유하기
+      </button>
+
       <p className="disclaimer">재미로 보는 전생 이야기입니다</p>
+
+      {/* 클립보드 복사 토스트 */}
+      {toastVisible && (
+        <div className="share-toast">✓ 링크가 복사됐습니다</div>
+      )}
     </div>
   );
 }

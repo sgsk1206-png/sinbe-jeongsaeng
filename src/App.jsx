@@ -3,6 +3,8 @@ import StarBackground from './components/StarBackground';
 import InputScreen from './components/InputScreen';
 import ResultScreen from './components/ResultScreen';
 import CTAScreen from './components/CTAScreen';
+import ShareScreen from './components/ShareScreen';
+import { decodeShareData } from './utils/share.js';
 import { MOCK_PAST_LIVES } from './mockData.js';
 
 // VITE_MOCK_MODE=true → 목업 데이터 사용 (API 호출 없음)
@@ -78,6 +80,15 @@ async function fetchLife({ name, dateType, year, month, day, hour, hash, lifeInd
 }
 
 export default function App() {
+  // ── 공유 URL 감지 (초기 1회만 평가) ──
+  const [shareData] = useState(() => {
+    const encoded = new URLSearchParams(window.location.search).get('data');
+    return encoded ? decodeShareData(encoded) : null;
+  });
+  const [showShare, setShowShare] = useState(() => {
+    return !!new URLSearchParams(window.location.search).get('data');
+  });
+
   const [screen, setScreen] = useState('input');
   const [pastLives, setPastLives] = useState(null);
   const [currentLife, setCurrentLife] = useState(0);
@@ -89,6 +100,12 @@ export default function App() {
   const [prefetchedLife, setPrefetchedLife] = useState(null);
   // 현재 목표 프리페치 인덱스 — race condition 방지용
   const prefetchTargetRef = useRef(null);
+
+  // 공유 페이지 → 메인으로 이동
+  const handleShareStart = () => {
+    window.history.replaceState({}, '', window.location.pathname);
+    setShowShare(false);
+  };
 
   // ── 백그라운드 프리페치 ──
   // UI 블로킹 없음. 오류는 조용히 무시 (handleNext에서 재시도).
@@ -258,6 +275,19 @@ export default function App() {
     setPrefetchedLife(null);
     prefetchTargetRef.current = null;
   };
+
+  // 공유 URL로 접근한 경우 ShareScreen만 표시
+  if (showShare && shareData) {
+    return (
+      <div className="app">
+        <StarBackground />
+        <div className="container">
+          <ShareScreen shareData={shareData} onStart={handleShareStart} />
+        </div>
+        <div className="branding">신비의거울</div>
+      </div>
+    );
+  }
 
   return (
     <div className="app">

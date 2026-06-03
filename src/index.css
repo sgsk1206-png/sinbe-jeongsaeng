@@ -1084,3 +1084,106 @@ input[type='number']::-webkit-inner-spin-button {
   .cta-title                      { font-size: 26px; }
   .cta-subtitle                   { font-size: 15px; }
 }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   공유 버튼 & 토스트 (ResultScreen)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 11px;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid rgba(140, 90, 200, 0.28);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+.share-btn:hover {
+  border-color: rgba(140, 90, 200, 0.6);
+  color: var(--text);
+}
+
+.share-toast {
+  position: fixed;
+  bottom: 88px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(120, 60, 200, 0.95);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: 22px;
+  font-size: 14px;
+  white-space: nowrap;
+  z-index: 99999;
+  animation: toast-slide-in 0.22s ease;
+  pointer-events: none;
+}
+@keyframes toast-slide-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   공유 페이지 (ShareScreen)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.share-screen {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px 0 48px;
+}
+
+.share-header {
+  text-align: center;
+  padding: 12px 0 6px;
+}
+.share-header-icon {
+  display: block;
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+.share-header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: 0.5px;
+}
+.share-header-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  letter-spacing: 0.3px;
+}
+
+.share-cta-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+.share-cta-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  letter-spacing: 0.3px;
+}
+.share-cta-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.share-cta-btn:hover { opacity: 0.88; }
