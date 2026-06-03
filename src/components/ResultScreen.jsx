@@ -392,7 +392,11 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
               <div className="card-divider" style={{ backgroundColor: `${cardColor}18` }} />
               <div className="card-section karma-section" style={{ backgroundColor: `${cardColor}0d` }}>
                 <span className="section-label karma-label">✦ 전생의 흔적</span>
-                <p className="section-content karma">전생의 {shortIdentity} 때문에 이번생엔... {life.past_trace}</p>
+                <p className="section-content karma">
+                  {life.past_trace.startsWith('전생의')
+                    ? life.past_trace
+                    : `전생의 ${shortIdentity} 때문에 이번생엔... ${life.past_trace}`}
+                </p>
               </div>
             </>
           )}
