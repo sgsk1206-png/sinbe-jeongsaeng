@@ -306,15 +306,8 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
       alert('카카오 공유를 사용할 수 없습니다');
       return;
     }
-    window.Kakao.Share.sendDefault({
-      objectType: 'feed',
-      content: {
-        title: `${userName}님의 전생 이야기`,
-        description: `${life.era} · ${life.identity?.split('(')[0].trim()}`,
-        imageUrl: `${window.location.origin}/images/og-image.jpg`,
-        link: { mobileWebUrl: url, webUrl: url },
-      },
-      buttons: [{ title: '공유 페이지 보기', link: { mobileWebUrl: url, webUrl: url } }],
+    window.Kakao.Share.sendScrap({
+      requestUrl: url,
     });
   };
 
