@@ -1,5 +1,21 @@
 import { calculateSaju, lunarToSolar, getPillarByHangul } from '@fullstackfamily/manseryeok';
 
+// ── 균시차 (Equation of Time) 계산 ──
+// 공식: B = 360/365 × (dayOfYear - 81) [도]
+//       EOT(분) = 9.87×sin(2B) - 7.53×cos(B) - 1.5×sin(B)
+// 반환값: 분 단위 실수 (양수 = 진태양시가 평균태양시보다 빠름)
+function getDayOfYear(year, month, day) {
+  const start = new Date(year, 0, 0);       // 전년 12월 31일
+  const date  = new Date(year, month - 1, day);
+  return Math.floor((date - start) / 86400000);
+}
+
+function equationOfTimeMinutes(year, month, day) {
+  const doy = getDayOfYear(year, month, day);
+  const B = ((360 / 365) * (doy - 81)) * (Math.PI / 180); // 도 → 라디안
+  return 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+}
+
 // 시 이름(지지) → calculateSaju 용 대표 시각 (정각 기준)
 const HOUR_MAP = {
   '자시': 0,  '축시': 2,  '인시': 4,  '묘시': 6,
@@ -42,8 +58,14 @@ export function calculateManseryeok(year, month, day, hour, isLunar) {
 
   const hourNum = HOUR_MAP[hour] ?? null;
 
+  // 균시차 계산 후 solarMinute 인자로 전달
+  // calculateSaju 내부: calcMinute = solarMinute - 경도보정(32분)
+  // → 결과적으로 경도보정 + 균시차가 동시에 적용됨
+  const eot = equationOfTimeMinutes(sy, sm, sd);
+  const eotMin = Math.round(eot); // 분 단위 정수로 반올림
+
   // 사주팔자 계산 (시주 모를 때 정오 기준)
-  const saju = calculateSaju(sy, sm, sd, hourNum ?? 12);
+  const saju = calculateSaju(sy, sm, sd, hourNum ?? 12, eotMin);
   const hasHour = hourNum !== null;
 
   const pillarNames = hasHour
