@@ -46,17 +46,21 @@ function hashInput(name, dateType, year, month, day, hour) {
   return (h >>> 0).toString(16).padStart(8, '0');
 }
 
-// hash 기반 전생 횟수 결정 (api/past-lives.js와 동일 로직) — 최대 3회
+// hash 기반 전생 횟수 결정 (api/past-lives.js와 동일 로직) — 최소 2, 최대 5회
 function getTotalLives(hash) {
   const n = parseInt(hash, 16);
-  if (n % 50 === 7) return 1;
-  return 2 + (n % 2); // 2 또는 3
+  return 2 + (n % 4); // 2~5
 }
 
 function getSoulGrade(total) {
-  if (total === 1) return '첫번째생';
-  if (total === 2) return '어린영혼';
-  return '오래된영혼'; // 3
+  if (total <= 2) return '어린영혼';
+  if (total === 3) return '오래된영혼';
+  return '고대영혼'; // 4~5
+}
+
+// 전생 배열을 birth_year 오름차순(오래된 순)으로 정렬 — null은 끝으로
+function sortLivesByBirthYear(lives) {
+  return [...lives].sort((a, b) => (a.birth_year ?? Infinity) - (b.birth_year ?? Infinity));
 }
 
 function getCachedLife(hash, index) {
@@ -125,22 +129,23 @@ export default function App() {
   };
 
   // ── 백그라운드 프리페치 ──
+  // loadedCount: 현재 로드된 전생 수 (0-based 다음 로드 인덱스와 동일)
   // UI 블로킹 없음. 오류는 조용히 무시 (handleNext에서 재시도).
-  async function triggerPrefetch(currentIndex, livesSnapshot, params) {
+  async function triggerPrefetch(loadedCount, livesSnapshot, params) {
     if (!params || IS_MOCK) return;
-    const nextIndex = currentIndex + 1; // 0-based
-    if (nextIndex >= params.totalLives) return; // 마지막 전생이면 프리페치 안 함
-    if (livesSnapshot[nextIndex]) return;       // 이미 로드됐으면 스킵
+    const nextLoadIndex = loadedCount;               // 0-based, 다음에 로드할 전생 번호
+    if (nextLoadIndex >= params.totalLives) return;  // 더 로드할 전생 없음
+    if (livesSnapshot.length > nextLoadIndex) return; // 이미 로드됨
 
-    const lifeIndex = nextIndex + 1; // API는 1-based
-    prefetchTargetRef.current = nextIndex;       // 현재 목표 업데이트
+    const lifeIndex = nextLoadIndex + 1; // API는 1-based
+    prefetchTargetRef.current = nextLoadIndex;
 
     // 캐시 확인
     const cached = getCachedLife(params.hash, lifeIndex);
     if (cached) {
-      if (prefetchTargetRef.current === nextIndex) {
-        setPrefetchedLife({ index: nextIndex, life: cached });
-        console.log(`[prefetch] cache hit index=${nextIndex}`);
+      if (prefetchTargetRef.current === nextLoadIndex) {
+        setPrefetchedLife({ loadIndex: nextLoadIndex, life: cached });
+        console.log(`[prefetch] cache hit loadIndex=${nextLoadIndex}`);
       }
       return;
     }
@@ -151,19 +156,18 @@ export default function App() {
       .map(l => l.historical_figure)
       .filter(Boolean);
 
-    console.log(`[prefetch] start index=${nextIndex} lifeIndex=${lifeIndex} usedFigures=${JSON.stringify(usedFigures)}`);
+    console.log(`[prefetch] start loadIndex=${nextLoadIndex} lifeIndex=${lifeIndex}`);
     try {
       const life = await fetchLife({ ...params, lifeIndex, usedFigures });
       setCachedLife(params.hash, lifeIndex, life);
-      // 여전히 이 인덱스가 목표일 때만 반영 (race condition 방지)
-      if (prefetchTargetRef.current === nextIndex) {
-        setPrefetchedLife({ index: nextIndex, life });
-        console.log(`[prefetch] done index=${nextIndex} name=${life.name}`);
+      if (prefetchTargetRef.current === nextLoadIndex) {
+        setPrefetchedLife({ loadIndex: nextLoadIndex, life });
+        console.log(`[prefetch] done loadIndex=${nextLoadIndex} name=${life.name}`);
       } else {
-        console.log(`[prefetch] stale result discarded index=${nextIndex}`);
+        console.log(`[prefetch] stale result discarded loadIndex=${nextLoadIndex}`);
       }
     } catch (e) {
-      console.warn(`[prefetch] failed index=${nextIndex}:`, e.message);
+      console.warn(`[prefetch] failed loadIndex=${nextLoadIndex}:`, e.message);
     }
   }
 
@@ -203,8 +207,8 @@ export default function App() {
       setCurrentLife(0);
       setScreen('result');
 
-      // 첫 전생 표시 즉시 다음 전생 프리페치 시작
-      triggerPrefetch(0, lives, params);
+      // 첫 전생 표시 즉시 다음 전생 프리페치 시작 (loadedCount=1)
+      triggerPrefetch(1, lives, params);
     } catch (err) {
       setError(err.message);
       setScreen('input');
@@ -213,52 +217,51 @@ export default function App() {
 
   const handleNext = async (fromIndex) => {
     window.scrollTo(0, 0);
-    // fromIndex를 ResultScreen에서 명시적으로 전달받아 스테일 클로저 방지
-    // fromIndex가 없을 경우 currentLife 폴백
-    const nextIndex = (fromIndex !== undefined ? fromIndex : currentLife) + 1; // 0-based
+    const from = fromIndex !== undefined ? fromIndex : currentLife;
+    const nextDisplayIndex = from + 1; // 정렬된 배열 기준 다음 표시 위치
+    const loadedCount = pastLives.lives.length; // 현재 로드된 전생 수
 
-    if (nextIndex >= pastLives.total) {
+    // ① 정렬된 배열에 다음 위치가 이미 있으면 바로 이동
+    if (nextDisplayIndex < loadedCount) {
+      setCurrentLife(nextDisplayIndex);
+      setPrefetchedLife(null);
+      triggerPrefetch(loadedCount, pastLives.lives, requestParams);
+      return;
+    }
+
+    // ② 모든 전생을 다 봤으면 CTA로
+    if (loadedCount >= pastLives.total) {
       setScreen('cta');
       return;
     }
 
-    // ① 이미 로드된 전생이면 바로 이동
-    if (pastLives.lives[nextIndex]) {
-      setCurrentLife(nextIndex);
-      setPrefetchedLife(null);
-      triggerPrefetch(nextIndex, pastLives.lives, requestParams);
-      return;
-    }
-
-    // ② 프리페치 완료된 데이터가 있으면 즉시 사용 (로딩 오버레이 없음)
-    if (prefetchedLife && prefetchedLife.index === nextIndex) {
+    // ③ 프리페치 완료된 데이터가 있으면 즉시 사용 (로딩 오버레이 없음)
+    if (prefetchedLife && prefetchedLife.loadIndex === loadedCount) {
       const nextLife = prefetchedLife.life;
-      const newLives = [...pastLives.lives];
-      newLives[nextIndex] = nextLife;
+      const sortedLives = sortLivesByBirthYear([...pastLives.lives, nextLife]);
+      const displayIndex = sortedLives.indexOf(nextLife);
       setPrefetchedLife(null);
-      setPastLives(prev => ({ ...prev, lives: newLives }));
-      setCurrentLife(nextIndex);
-      // 그 다음 전생도 프리페치
-      triggerPrefetch(nextIndex, newLives, requestParams);
+      setPastLives(prev => ({ ...prev, lives: sortedLives }));
+      setCurrentLife(displayIndex);
+      triggerPrefetch(loadedCount + 1, sortedLives, requestParams);
       return;
     }
 
-    // ③ 프리페치 없으면 기존 로딩 방식
+    // ④ 프리페치 없으면 API 로딩
     setIsLoadingNext(true);
     try {
       let nextLife;
 
       if (IS_MOCK) {
         await new Promise(r => setTimeout(r, 800));
-        nextLife = MOCK_PAST_LIVES.lives[nextIndex] || MOCK_PAST_LIVES.lives[0];
+        nextLife = MOCK_PAST_LIVES.lives[loadedCount] || MOCK_PAST_LIVES.lives[0];
       } else {
-        const lifeIndex = nextIndex + 1; // API는 1-based
+        const lifeIndex = loadedCount + 1; // API는 1-based
         const cached = getCachedLife(requestParams.hash, lifeIndex);
         if (cached) {
           nextLife = cached;
         } else {
           const usedFigures = pastLives.lives
-            .filter(Boolean)
             .map(l => l.historical_figure)
             .filter(Boolean);
           nextLife = await fetchLife({ ...requestParams, lifeIndex, usedFigures });
@@ -266,12 +269,11 @@ export default function App() {
         }
       }
 
-      const newLives = [...pastLives.lives];
-      newLives[nextIndex] = nextLife;
-      setPastLives(prev => ({ ...prev, lives: newLives }));
-      setCurrentLife(nextIndex);
-      // 로딩 완료 후에도 그 다음 전생 프리페치
-      triggerPrefetch(nextIndex, newLives, requestParams);
+      const sortedLives = sortLivesByBirthYear([...pastLives.lives, nextLife]);
+      const displayIndex = sortedLives.indexOf(nextLife);
+      setPastLives(prev => ({ ...prev, lives: sortedLives }));
+      setCurrentLife(displayIndex);
+      triggerPrefetch(loadedCount + 1, sortedLives, requestParams);
     } catch (err) {
       setError(err.message);
       alert(`전생 불러오기 실패: ${err.message}\n잠시 후 다시 시도해 주세요.`);

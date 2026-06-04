@@ -9,11 +9,10 @@ function assignGroup(hash, lifeIndex) {
   return GROUP_POOL[(base + (lifeIndex - 1) * 7) % 12];
 }
 
-// hash 기반 전생 횟수 결정 (App.jsx와 동일 로직) — 최대 3회
+// hash 기반 전생 횟수 결정 (App.jsx와 동일 로직) — 최소 2, 최대 5회
 function getTotalLives(hash) {
   const n = parseInt(hash, 16);
-  if (n % 50 === 7) return 1; // ~2% 첫번째생
-  return 2 + (n % 2);         // 2 또는 3
+  return 2 + (n % 4); // 2~5
 }
 
 // API 응답에 group 누락 또는 잘못된 값일 때 identity 텍스트로 자동 매핑
