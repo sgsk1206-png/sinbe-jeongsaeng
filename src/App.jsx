@@ -211,9 +211,11 @@ export default function App() {
     }
   };
 
-  const handleNext = async () => {
+  const handleNext = async (fromIndex) => {
     window.scrollTo(0, 0);
-    const nextIndex = currentLife + 1; // 0-based
+    // fromIndex를 ResultScreen에서 명시적으로 전달받아 스테일 클로저 방지
+    // fromIndex가 없을 경우 currentLife 폴백
+    const nextIndex = (fromIndex !== undefined ? fromIndex : currentLife) + 1; // 0-based
 
     if (nextIndex >= pastLives.total) {
       setScreen('cta');
@@ -272,14 +274,16 @@ export default function App() {
       triggerPrefetch(nextIndex, newLives, requestParams);
     } catch (err) {
       setError(err.message);
+      alert(`전생 불러오기 실패: ${err.message}\n잠시 후 다시 시도해 주세요.`);
     } finally {
       setIsLoadingNext(false);
     }
   };
 
-  const handlePrev = () => {
+  const handlePrev = (fromIndex) => {
     window.scrollTo(0, 0);
-    if (currentLife > 0) setCurrentLife(i => i - 1);
+    const cur = fromIndex !== undefined ? fromIndex : currentLife;
+    if (cur > 0) setCurrentLife(cur - 1);
   };
 
   const handleReset = () => {

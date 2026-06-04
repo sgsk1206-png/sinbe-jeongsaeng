@@ -251,8 +251,9 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
   }, [currentIndex, data.lives]);
 
   // 페이지 전환은 App.jsx의 onNext/onPrev 내부에서 scrollTo 처리
-  const handleNext = () => { onNext(); };
-  const handlePrev = () => { onPrev(); };
+  // currentIndex를 명시적으로 전달 — 스테일 클로저로 인한 잘못된 인덱스 읽기 방지
+  const handleNext = () => { onNext(currentIndex); };
+  const handlePrev = () => { onPrev(currentIndex); };
 
   // ── 공유 기능 ──
   const [shareSaving, setShareSaving] = useState(false);
