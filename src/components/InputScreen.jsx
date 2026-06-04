@@ -120,6 +120,7 @@ export default function InputScreen({ onSubmit, error }) {
             ))}
           </select>
           <p className="hint-text">⏰ 시간을 입력하면 더 정확합니다</p>
+          <p className="hint-text hint-text--saju">🌙 태어난 시간을 입력하면 사주 오행을 반영한 더 정확한 전생 이야기를 만나볼 수 있어요</p>
         </div>
 
         {error && <p className="error-text">⚠ {error}</p>}
