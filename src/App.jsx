@@ -58,6 +58,22 @@ function getSoulGrade(total) {
   return '고대영혼'; // 4~5
 }
 
+// 탐험 횟수 카운터 기반 스타일 순환 (A→B→C→A→B→C...)
+// localStorage 'sinbe_style_counter'에 횟수 저장 → counter % 3 = styleIndex
+// Math.random() / crypto / Date.now() 모두 환경별 편향 가능 → 순환 방식으로 완전 균등 보장
+const STYLE_COUNTER_KEY = 'sinbe_style_counter';
+function nextStyleIndex() {
+  try {
+    const prev = parseInt(localStorage.getItem(STYLE_COUNTER_KEY) || '0', 10);
+    const counter = isNaN(prev) ? 0 : prev + 1;
+    localStorage.setItem(STYLE_COUNTER_KEY, String(counter));
+    return counter % 3;
+  } catch {
+    // localStorage 접근 불가 시 Math.random() fallback
+    return [0, 1, 2][Math.floor(Math.random() * 3)];
+  }
+}
+
 function getCachedLife(hash, index) {
   try { return JSON.parse(localStorage.getItem(`${CACHE_PREFIX}${hash}_${index}`)); }
   catch { return null; }
@@ -198,8 +214,8 @@ export default function App() {
       }
 
       const lives = [life0];
-      // styleIndex: 탐험 시작 시 1회 결정, pastLives에 포함시켜 세션 내 완전 고정
-      const styleIndex = Date.now() % 3; // 0=A, 1=B, 2=C — 클릭 시점 ms 기반, 매 탐험마다 다름
+      // styleIndex: 탐험 횟수 카운터 순환 (A→B→C→A→...) — 환경 무관 균등 보장
+      const styleIndex = nextStyleIndex();
       console.log(`[style] picked styleIndex=${styleIndex} (${['A','B','C'][styleIndex]}스타일)`);
       setPastLives({ total: totalLives, soul_grade: soulGrade, lives, styleIndex });
       setCurrentLife(0);
