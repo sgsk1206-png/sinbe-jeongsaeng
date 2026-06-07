@@ -223,7 +223,10 @@ function HistCard({ figure, profile }) {
   );
 }
 
-export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev, isLoadingNext = false, styleIndex = 0 }) {
+export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev, isLoadingNext = false }) {
+  // styleIndex는 탐험 시작 시 pastLives 객체에 포함되어 결정됨
+  // → 별도 prop/state가 아니므로 React 배치 타이밍 문제 없이 세션 내 완전 고정
+  const styleIndex = data.styleIndex ?? 0;
   const life = data.lives[currentIndex];
   const meta = GRADE_META[data.soul_grade] || GRADE_META['오래된영혼'];
   const cardColor = life.color || meta.color;

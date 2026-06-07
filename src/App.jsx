@@ -113,8 +113,6 @@ export default function App() {
   const [screen, setScreen] = useState('input');
   const [pastLives, setPastLives] = useState(null);
   const [currentLife, setCurrentLife] = useState(0);
-  // 탐험 시작 시 1회 결정 — 이전/다음 이동 시에도 고정
-  const [styleIndex, setStyleIndex] = useState(0);
   const [userName, setUserName] = useState('');
   const [error, setError] = useState(null);
   const [isLoadingNext, setIsLoadingNext] = useState(false);
@@ -183,7 +181,6 @@ export default function App() {
     const soulGrade = getSoulGrade(totalLives);
     const params = { name, dateType, year, month, day, hour, hash, totalLives, soulGrade };
 
-    setStyleIndex(Math.floor(Math.random() * 3)); // 탐험 시작 시 1회 선택
     setRequestParams(params);
     setPrefetchedLife(null);
     prefetchTargetRef.current = null;
@@ -206,7 +203,10 @@ export default function App() {
       }
 
       const lives = [life0];
-      setPastLives({ total: totalLives, soul_grade: soulGrade, lives });
+      // styleIndex: 탐험 시작 시 1회 결정, pastLives에 포함시켜 세션 내 완전 고정
+      // (별도 state로 관리 시 React 배치 타이밍 문제로 편향 발생 → 이 방식으로 해결)
+      const styleIndex = Math.floor(Math.random() * 3);
+      setPastLives({ total: totalLives, soul_grade: soulGrade, lives, styleIndex });
       setCurrentLife(0);
       setScreen('result');
 
@@ -339,7 +339,6 @@ export default function App() {
             onNext={handleNext}
             onPrev={handlePrev}
             isLoadingNext={isLoadingNext}
-            styleIndex={styleIndex}
           />
         )}
         {screen === 'cta' && <CTAScreen userName={userName} onReset={handleReset} />}
