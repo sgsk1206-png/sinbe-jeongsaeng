@@ -113,6 +113,8 @@ export default function App() {
   const [screen, setScreen] = useState('input');
   const [pastLives, setPastLives] = useState(null);
   const [currentLife, setCurrentLife] = useState(0);
+  // 탐험 시작 시 1회 결정 — 이전/다음 이동 시에도 고정
+  const [styleIndex, setStyleIndex] = useState(0);
   const [userName, setUserName] = useState('');
   const [error, setError] = useState(null);
   const [isLoadingNext, setIsLoadingNext] = useState(false);
@@ -181,6 +183,7 @@ export default function App() {
     const soulGrade = getSoulGrade(totalLives);
     const params = { name, dateType, year, month, day, hour, hash, totalLives, soulGrade };
 
+    setStyleIndex(Math.floor(Math.random() * 3)); // 탐험 시작 시 1회 선택
     setRequestParams(params);
     setPrefetchedLife(null);
     prefetchTargetRef.current = null;
@@ -336,6 +339,7 @@ export default function App() {
             onNext={handleNext}
             onPrev={handlePrev}
             isLoadingNext={isLoadingNext}
+            styleIndex={styleIndex}
           />
         )}
         {screen === 'cta' && <CTAScreen userName={userName} onReset={handleReset} />}

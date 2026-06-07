@@ -54,14 +54,14 @@ const GROUP_IMAGE = {
   outcast_여:     ['outcast_f_1.jpg',        'outcast_f_2.jpg',      'outcast_f_3.jpg'],
 };
 
-// _1/_2/_3 중 완전 랜덤 선택 — 호출마다 다를 수 있음
-// 안정성은 CharImage 내부 useState로 보장 (마운트 시 1회 고정)
-function getCharImage(life) {
+// styleIndex: 0=_1(A), 1=_2(B), 2=_3(C) — 탐험 시작 시 1회 결정된 값을 받아 사용
+// 랜덤 선택은 App.jsx(handleSubmit)에서만 수행, 여기서는 항상 고정 인덱스 사용
+function getCharImage(life, styleIndex) {
   if (life.group && life.gender) {
     const key = `${life.group}_${life.gender}`;
     const files = GROUP_IMAGE[key];
     if (files?.length) {
-      const idx  = Math.floor(Math.random() * files.length);
+      const idx  = styleIndex % files.length;
       const file = files[idx];
       return `/images/characters/${file}`;
     }
@@ -95,10 +95,9 @@ function eraDisplay(life) {
   return `${life.era} · ${life.year}`;
 }
 
-function CharImage({ life, identity, name, shortName, color }) {
-  // 마운트 시 1회 랜덤 선택 — 리렌더해도 같은 파일 유지
-  // key={currentIndex} 덕분에 생애 전환 시 remount → 새 랜덤 선택
-  const [src] = useState(() => getCharImage(life));
+function CharImage({ life, identity, name, shortName, color, styleIndex }) {
+  // styleIndex는 탐험 시작 시 App.jsx에서 1회 결정 — 전생 이동 시에도 고정
+  const src = getCharImage(life, styleIndex);
   const videoSrc = src ? src.replace(/\.[^.]+$/, '.mp4') : null;
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
@@ -224,7 +223,7 @@ function HistCard({ figure, profile }) {
   );
 }
 
-export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev, isLoadingNext = false }) {
+export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev, isLoadingNext = false, styleIndex = 0 }) {
   const life = data.lives[currentIndex];
   const meta = GRADE_META[data.soul_grade] || GRADE_META['오래된영혼'];
   const cardColor = life.color || meta.color;
@@ -238,10 +237,10 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
   useEffect(() => {
     [data.lives[currentIndex - 1], data.lives[currentIndex + 1]]
       .filter(Boolean)
-      .map(getCharImage)
+      .map(l => getCharImage(l, styleIndex))
       .filter(Boolean)
       .forEach((src) => { const img = new Image(); img.src = src; });
-  }, [currentIndex, data.lives]);
+  }, [currentIndex, data.lives, styleIndex]);
 
   // 페이지 전환은 App.jsx의 onNext/onPrev 내부에서 scrollTo 처리
   // currentIndex를 명시적으로 전달 — 스테일 클로저로 인한 잘못된 인덱스 읽기 방지
@@ -340,6 +339,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
           name={life.name}
           shortName={shortName}
           color={cardColor}
+          styleIndex={styleIndex}
         />
 
         <div className="card-body">
