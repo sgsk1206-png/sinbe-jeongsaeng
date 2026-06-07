@@ -242,10 +242,11 @@ export default function App() {
     if (prefetchedLife && prefetchedLife.loadIndex === loadedCount) {
       const nextLife = prefetchedLife.life;
       const sortedLives = sortLivesByBirthYear([...pastLives.lives, nextLife]);
-      const displayIndex = sortedLives.indexOf(nextLife);
+      // nextDisplayIndex(from+1) 고정 이동 — 새 전생의 정렬 위치(displayIndex)로 이동하면
+      // "다음" 클릭 시 오히려 앞 번호로 돌아가거나 방문 안 한 전생이 나오는 버그 발생
       setPrefetchedLife(null);
       setPastLives(prev => ({ ...prev, lives: sortedLives }));
-      setCurrentLife(displayIndex);
+      setCurrentLife(nextDisplayIndex);
       triggerPrefetch(loadedCount + 1, sortedLives, requestParams);
       return;
     }
@@ -273,9 +274,9 @@ export default function App() {
       }
 
       const sortedLives = sortLivesByBirthYear([...pastLives.lives, nextLife]);
-      const displayIndex = sortedLives.indexOf(nextLife);
+      // nextDisplayIndex(from+1) 고정 이동 — 경로③과 동일한 이유
       setPastLives(prev => ({ ...prev, lives: sortedLives }));
-      setCurrentLife(displayIndex);
+      setCurrentLife(nextDisplayIndex);
       triggerPrefetch(loadedCount + 1, sortedLives, requestParams);
     } catch (err) {
       setError(err.message);
