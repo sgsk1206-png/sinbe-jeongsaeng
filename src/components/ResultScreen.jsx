@@ -97,6 +97,7 @@ function eraDisplay(life) {
 
 function CharImage({ life, identity, name, shortName, color, styleIndex }) {
   // styleIndex는 탐험 시작 시 App.jsx에서 1회 결정 — 전생 이동 시에도 고정
+  // key는 외부(ResultScreen JSX)에서 life 내용 기반으로 설정 → life 변경 시 remount 보장
   const src = getCharImage(life, styleIndex);
   const videoSrc = src ? src.replace(/\.[^.]+$/, '.mp4') : null;
   const [videoFailed, setVideoFailed] = useState(false);
@@ -105,22 +106,20 @@ function CharImage({ life, identity, name, shortName, color, styleIndex }) {
 
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
-      {/* 이미지: placeholder 역할. _3.jpg 없으면 onError로 숨김 */}
+      {/* 이미지: 비디오 준비 전에는 정상 표시, 준비되면 fade-out */}
       <img
-        key={src}
         className="char-img"
         src={src || ''}
         alt={`${identity} ${name}`}
         onError={e => { e.currentTarget.style.opacity = '0'; }}
-        style={showVideo ? {
-          opacity: videoReady ? 0 : 1,
+        style={showVideo && videoReady ? {
+          opacity: 0,
           transition: 'opacity 0.3s',
         } : undefined}
       />
-      {/* 영상: .mp4 있을 때만 렌더. controls 없음. 로드 전 opacity:0 */}
+      {/* 영상: 준비 전 visibility:hidden — opacity:0만으론 모바일 재생버튼 못 막음 */}
       {showVideo && (
         <video
-          key={videoSrc}
           className="char-img"
           src={videoSrc}
           autoPlay
@@ -129,9 +128,12 @@ function CharImage({ life, identity, name, shortName, color, styleIndex }) {
           playsInline
           onCanPlay={() => setVideoReady(true)}
           onError={() => setVideoFailed(true)}
-          style={{
-            opacity: videoReady ? 1 : 0,
+          style={videoReady ? {
+            opacity: 1,
             transition: 'opacity 0.3s',
+          } : {
+            visibility: 'hidden',
+            opacity: 0,
           }}
         />
       )}
@@ -335,8 +337,9 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
 
       <div className="life-card" style={{ borderColor: `${cardColor}50` }}>
         {/* 이미지 영역 — 전생 캐릭터 (3:4) */}
+        {/* key: life 내용 기반 — 인덱스 기반이면 정렬 후 같은 인덱스에 다른 life가 오면 remount 안 됨 */}
         <CharImage
-          key={currentIndex}
+          key={`${life.name}|${life.birth_year ?? ''}|${life.group ?? ''}`}
           life={life}
           identity={shortIdentity}
           name={life.name}
