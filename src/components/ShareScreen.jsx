@@ -2,30 +2,30 @@ import { useState, useEffect } from 'react';
 
 // ── 그룹+성별 → 이미지 매핑 (ResultScreen과 동일) ──
 const GROUP_IMAGE = {
-  fantasy_여:     ['gumiho_f_1.jpg',        'gumiho_f_2.jpg'],
-  fantasy_남:     ['jeoseungsaja_m_1.jpg',   'jeoseungsaja_m_2.jpg'],
-  warrior_남:     ['mushin_m_1.jpg',         'mushin_m_2.jpg'],
-  warrior_여:     ['mushin_f_1.jpg',         'mushin_f_2.jpg'],
-  shaman_남:      ['musokin_m_1.jpg',        'musokin_m_2.jpg'],
-  shaman_여:      ['shaman_f_1.png',         'shaman_f_2.jpg'],
-  entertainer_여: ['gisaeng_f_1.jpg',        'gisaeng_f_2.jpg'],
-  entertainer_남: ['entertainer_m_1.png',    'entertainer_m_2.jpg'],
-  commoner_여:    ['commoner_f_1.png',       'commoner_f_2.jpg'],
-  commoner_남:    ['commoner_m_1.png',       'commoner_m_2.jpg'],
-  scholar_남:     ['uiwon_m_1.jpg',          'uiwon_m_2.jpg'],
-  scholar_여:     ['uiwon_f_1.jpg',          'uiwon_f_2.jpg'],
-  royal_남:       ['king_m_1.jpg',           'king_m_2.jpg'],
-  royal_여:       ['king_f_1.jpg',           'king_f_2.jpg'],
-  noble_남:       ['yangban_m_1.jpg',        'yangban_m_2.jpg'],
-  noble_여:       ['yangban_f_1.jpg',        'yangban_f_2.jpg'],
-  monk_남:        ['monk_m_1.jpg',           'monk_m_2.jpg'],
-  monk_여:        ['monk_f_1.jpg',           'monk_f_2.jpg'],
-  court_여:       ['gungnyeo_f_1.png',       'gungnyeo_f_2.jpg'],
-  court_남:       ['court_m_1.png',          'court_m_2.jpg'],
-  outlaw_남:      ['rebel_m_1.png',          'rebel_m_2.jpg'],
-  outlaw_여:      ['rebel_f_1.jpg',          'rebel_f_2.jpg'],
-  outcast_남:     ['outcast_m_1.jpg',        'outcast_m_2.jpg'],
-  outcast_여:     ['outcast_f_1.jpg',        'outcast_f_2.jpg'],
+  fantasy_여:     ['gumiho_f_1.jpg',        'gumiho_f_2.jpg',       'gumiho_f_3.jpg'],
+  fantasy_남:     ['jeoseungsaja_m_1.jpg',   'jeoseungsaja_m_2.jpg', 'jeoseungsaja_m_3.jpg'],
+  warrior_남:     ['mushin_m_1.jpg',         'mushin_m_2.jpg',       'mushin_m_3.jpg'],
+  warrior_여:     ['mushin_f_1.jpg',         'mushin_f_2.jpg',       'mushin_f_3.jpg'],
+  shaman_남:      ['musokin_m_1.jpg',        'musokin_m_2.jpg',      'musokin_m_3.jpg'],
+  shaman_여:      ['shaman_f_1.png',         'shaman_f_2.jpg',       'shaman_f_3.jpg'],
+  entertainer_여: ['gisaeng_f_1.jpg',        'gisaeng_f_2.jpg',      'gisaeng_f_3.jpg'],
+  entertainer_남: ['entertainer_m_1.png',    'entertainer_m_2.jpg',  'entertainer_m_3.jpg'],
+  commoner_여:    ['commoner_f_1.png',       'commoner_f_2.jpg',     'commoner_f_3.jpg'],
+  commoner_남:    ['commoner_m_1.png',       'commoner_m_2.jpg',     'commoner_m_3.jpg'],
+  scholar_남:     ['uiwon_m_1.jpg',          'uiwon_m_2.jpg',        'uiwon_m_3.jpg'],
+  scholar_여:     ['uiwon_f_1.jpg',          'uiwon_f_2.jpg',        'uiwon_f_3.jpg'],
+  royal_남:       ['king_m_1.jpg',           'king_m_2.jpg',         'king_m_3.jpg'],
+  royal_여:       ['king_f_1.jpg',           'king_f_2.jpg',         'king_f_3.jpg'],
+  noble_남:       ['yangban_m_1.jpg',        'yangban_m_2.jpg',      'yangban_m_3.jpg'],
+  noble_여:       ['yangban_f_1.jpg',        'yangban_f_2.jpg',      'yangban_f_3.jpg'],
+  monk_남:        ['monk_m_1.jpg',           'monk_m_2.jpg',         'monk_m_3.jpg'],
+  monk_여:        ['monk_f_1.jpg',           'monk_f_2.jpg',         'monk_f_3.jpg'],
+  court_여:       ['gungnyeo_f_1.png',       'gungnyeo_f_2.jpg',     'gungnyeo_f_3.jpg'],
+  court_남:       ['court_m_1.png',          'court_m_2.jpg',        'court_m_3.jpg'],
+  outlaw_남:      ['rebel_m_1.png',          'rebel_m_2.jpg',        'rebel_m_3.jpg'],
+  outlaw_여:      ['rebel_f_1.jpg',          'rebel_f_2.jpg',        'rebel_f_3.jpg'],
+  outcast_남:     ['outcast_m_1.jpg',        'outcast_m_2.jpg',      'outcast_m_3.jpg'],
+  outcast_여:     ['outcast_f_1.jpg',        'outcast_f_2.jpg',      'outcast_f_3.jpg'],
 };
 
 function getCharImage(life) {
@@ -33,8 +33,8 @@ function getCharImage(life) {
     const key = `${life.group}_${life.gender}`;
     const files = GROUP_IMAGE[key];
     if (files?.length) {
-      const seed = (life.name || '').split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-      return `/images/characters/${files.length > 1 && seed % 2 === 0 ? files[1] : files[0]}`;
+      const idx = Math.floor(Math.random() * files.length);
+      return `/images/characters/${files[idx]}`;
     }
   }
   return life.image_file || '';
@@ -47,8 +47,9 @@ function lightenColor(hex, amount = 0.4) {
   return `rgb(${Math.round(r+(255-r)*amount)},${Math.round(g+(255-g)*amount)},${Math.round(b+(255-b)*amount)})`;
 }
 
-// 캐릭터 이미지/영상
-function ShareCharImage({ src, identity, shortName, color }) {
+// 캐릭터 이미지/영상 — 마운트 시 1회 랜덤 선택 고정
+function ShareCharImage({ life, identity, shortName, color }) {
+  const [src] = useState(() => getCharImage(life));
   const videoSrc = src ? src.replace(/\.[^.]+$/, '.mp4') : null;
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoReady,  setVideoReady]  = useState(false);
@@ -59,6 +60,7 @@ function ShareCharImage({ src, identity, shortName, color }) {
         className="char-img"
         src={src || ''}
         alt={identity}
+        onError={e => { e.currentTarget.style.opacity = '0'; }}
         style={showVideo ? { opacity: videoReady ? 0 : 1, transition: 'opacity 0.3s' } : undefined}
       />
       {showVideo && (
@@ -85,7 +87,6 @@ function ShareContent({ userName, life, soulGrade, onStart }) {
   const lightColor = lightenColor(cardColor);
   const shortName  = life.name?.split(' ').at(-1) || '';
   const shortIdent = life.identity?.split('(')[0].trim() || '';
-  const imgSrc     = getCharImage(life);
   const p          = life.historical_profile;
 
   const eraText = (() => {
@@ -106,7 +107,7 @@ function ShareContent({ userName, life, soulGrade, onStart }) {
       </div>
 
       {/* 캐릭터 이미지 */}
-      <ShareCharImage src={imgSrc} identity={shortIdent} shortName={shortName} color={cardColor} />
+      <ShareCharImage life={life} identity={shortIdent} shortName={shortName} color={cardColor} />
 
       {/* 생애 카드 */}
       <div className="life-card" style={{ borderColor: `${cardColor}50` }}>

@@ -13,67 +13,59 @@ const HIST_THEME = {
 const HIST_THEME_DEFAULT = { bg: '#0d0920', color: '#a080cc', hanja: '', year: '' };
 
 // ── 그룹+성별 → 캐릭터 이미지 매핑 ──
-// 각 항목: [_1파일, _2파일] — _2가 있으면 50% 확률로 선택
+// 각 항목: [_1, _2, _3] — 매 조회마다 완전 랜덤 선택
 // getCharImage는 `${group}_${gender}` 키만 사용 (12그룹 × 2성별 = 24조합)
 const GROUP_IMAGE = {
   // ── fantasy ──
-  fantasy_여:     ['gumiho_f_1.jpg',        'gumiho_f_2.jpg'],
-  fantasy_남:     ['jeoseungsaja_m_1.jpg',   'jeoseungsaja_m_2.jpg'],  // fallback: _1 유지
+  fantasy_여:     ['gumiho_f_1.jpg',        'gumiho_f_2.jpg',       'gumiho_f_3.jpg'],
+  fantasy_남:     ['jeoseungsaja_m_1.jpg',   'jeoseungsaja_m_2.jpg', 'jeoseungsaja_m_3.jpg'],
   // ── warrior ──
-  warrior_남:     ['mushin_m_1.jpg',         'mushin_m_2.jpg'],
-  warrior_여:     ['mushin_f_1.jpg',         'mushin_f_2.jpg'],
+  warrior_남:     ['mushin_m_1.jpg',         'mushin_m_2.jpg',       'mushin_m_3.jpg'],
+  warrior_여:     ['mushin_f_1.jpg',         'mushin_f_2.jpg',       'mushin_f_3.jpg'],
   // ── shaman ──
-  shaman_남:      ['musokin_m_1.jpg',        'musokin_m_2.jpg'],
-  shaman_여:      ['shaman_f_1.png',         'shaman_f_2.jpg'],
+  shaman_남:      ['musokin_m_1.jpg',        'musokin_m_2.jpg',      'musokin_m_3.jpg'],
+  shaman_여:      ['shaman_f_1.png',         'shaman_f_2.jpg',       'shaman_f_3.jpg'],
   // ── entertainer ──
-  entertainer_여: ['gisaeng_f_1.jpg',        'gisaeng_f_2.jpg'],
-  entertainer_남: ['entertainer_m_1.png',    'entertainer_m_2.jpg'],
+  entertainer_여: ['gisaeng_f_1.jpg',        'gisaeng_f_2.jpg',      'gisaeng_f_3.jpg'],
+  entertainer_남: ['entertainer_m_1.png',    'entertainer_m_2.jpg',  'entertainer_m_3.jpg'],
   // ── commoner ──
-  commoner_여:    ['commoner_f_1.png',       'commoner_f_2.jpg'],
-  commoner_남:    ['commoner_m_1.png',       'commoner_m_2.jpg'],
+  commoner_여:    ['commoner_f_1.png',       'commoner_f_2.jpg',     'commoner_f_3.jpg'],
+  commoner_남:    ['commoner_m_1.png',       'commoner_m_2.jpg',     'commoner_m_3.jpg'],
   // ── scholar ──
-  scholar_남:     ['uiwon_m_1.jpg',          'uiwon_m_2.jpg'],
-  scholar_여:     ['uiwon_f_1.jpg',          'uiwon_f_2.jpg'],
+  scholar_남:     ['uiwon_m_1.jpg',          'uiwon_m_2.jpg',        'uiwon_m_3.jpg'],
+  scholar_여:     ['uiwon_f_1.jpg',          'uiwon_f_2.jpg',        'uiwon_f_3.jpg'],
   // ── royal ──
-  royal_남:       ['king_m_1.jpg',           'king_m_2.jpg'],
-  royal_여:       ['king_f_1.jpg',           'king_f_2.jpg'],
+  royal_남:       ['king_m_1.jpg',           'king_m_2.jpg',         'king_m_3.jpg'],
+  royal_여:       ['king_f_1.jpg',           'king_f_2.jpg',         'king_f_3.jpg'],
   // ── noble ──
-  noble_남:       ['yangban_m_1.jpg',        'yangban_m_2.jpg'],
-  noble_여:       ['yangban_f_1.jpg',        'yangban_f_2.jpg'],
+  noble_남:       ['yangban_m_1.jpg',        'yangban_m_2.jpg',      'yangban_m_3.jpg'],
+  noble_여:       ['yangban_f_1.jpg',        'yangban_f_2.jpg',      'yangban_f_3.jpg'],
   // ── monk ──
-  monk_남:        ['monk_m_1.jpg',           'monk_m_2.jpg'],
-  monk_여:        ['monk_f_1.jpg',           'monk_f_2.jpg'],
+  monk_남:        ['monk_m_1.jpg',           'monk_m_2.jpg',         'monk_m_3.jpg'],
+  monk_여:        ['monk_f_1.jpg',           'monk_f_2.jpg',         'monk_f_3.jpg'],
   // ── court ──
-  court_여:       ['gungnyeo_f_1.png',       'gungnyeo_f_2.jpg'],
-  court_남:       ['court_m_1.png',          'court_m_2.jpg'],
+  court_여:       ['gungnyeo_f_1.png',       'gungnyeo_f_2.jpg',     'gungnyeo_f_3.jpg'],
+  court_남:       ['court_m_1.png',          'court_m_2.jpg',        'court_m_3.jpg'],
   // ── outlaw ──
-  outlaw_남:      ['rebel_m_1.png',          'rebel_m_2.jpg'],
-  outlaw_여:      ['rebel_f_1.jpg',          'rebel_f_2.jpg'],
+  outlaw_남:      ['rebel_m_1.png',          'rebel_m_2.jpg',        'rebel_m_3.jpg'],
+  outlaw_여:      ['rebel_f_1.jpg',          'rebel_f_2.jpg',        'rebel_f_3.jpg'],
   // ── outcast ──
-  outcast_남:     ['outcast_m_1.jpg',        'outcast_m_2.jpg'],
-  outcast_여:     ['outcast_f_1.jpg',        'outcast_f_2.jpg'],
+  outcast_남:     ['outcast_m_1.jpg',        'outcast_m_2.jpg',      'outcast_m_3.jpg'],
+  outcast_여:     ['outcast_f_1.jpg',        'outcast_f_2.jpg',      'outcast_f_3.jpg'],
 };
 
-// group + gender 조합으로 이미지 경로 반환
-// _1/_2 파일 모두 있으면 50:50으로 선택
-// ※ Math.random()은 React 리렌더마다 다른 값 반환 → 이미지 깜빡임 유발
-//    대신 life.name 기반 결정론적 해시 사용 → 같은 생애 = 항상 같은 이미지
+// _1/_2/_3 중 완전 랜덤 선택 — 호출마다 다를 수 있음
+// 안정성은 CharImage 내부 useState로 보장 (마운트 시 1회 고정)
 function getCharImage(life) {
   if (life.group && life.gender) {
     const key = `${life.group}_${life.gender}`;
     const files = GROUP_IMAGE[key];
     if (files?.length) {
-      let file = files[0];
-      if (files.length > 1) {
-        // name 글자 코드 합산 → 짝수/_2, 홀수/_1 (안정적 50:50 분포)
-        const seed = (life.name || '').split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-        file = seed % 2 === 0 ? files[1] : files[0];
-      }
-      console.log(`[getCharImage] key=${key} selected=${file}`);
+      const idx  = Math.floor(Math.random() * files.length);
+      const file = files[idx];
       return `/images/characters/${file}`;
     }
   }
-  console.log(`[getCharImage] fallback image_file=${life.image_file}`);
   return life.image_file || '';
 }
 
@@ -103,23 +95,24 @@ function eraDisplay(life) {
   return `${life.era} · ${life.year}`;
 }
 
-function CharImage({ src, identity, name, shortName, color }) {
-  // 같은 파일명의 .mp4 존재 시 영상으로 표시, 없으면 이미지 fallback
+function CharImage({ life, identity, name, shortName, color }) {
+  // 마운트 시 1회 랜덤 선택 — 리렌더해도 같은 파일 유지
+  // key={currentIndex} 덕분에 생애 전환 시 remount → 새 랜덤 선택
+  const [src] = useState(() => getCharImage(life));
   const videoSrc = src ? src.replace(/\.[^.]+$/, '.mp4') : null;
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
   const showVideo = !!videoSrc && !videoFailed;
 
-  // .char-img 는 CSS에서 position:absolute;inset:0 으로 자동 겹침
-
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
-      {/* 이미지: 항상 렌더. showVideo 시 placeholder 역할 — 영상 로드 전까지 표시 */}
+      {/* 이미지: placeholder 역할. _3.jpg 없으면 onError로 숨김 */}
       <img
         key={src}
         className="char-img"
         src={src || ''}
         alt={`${identity} ${name}`}
+        onError={e => { e.currentTarget.style.opacity = '0'; }}
         style={showVideo ? {
           opacity: videoReady ? 0 : 1,
           transition: 'opacity 0.3s',
@@ -342,7 +335,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
         {/* 이미지 영역 — 전생 캐릭터 (3:4) */}
         <CharImage
           key={currentIndex}
-          src={getCharImage(life)}
+          life={life}
           identity={shortIdentity}
           name={life.name}
           shortName={shortName}
