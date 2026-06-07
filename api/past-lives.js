@@ -124,6 +124,34 @@ group은 별도로 지정됩니다. 오행은 인물의 기질·이야기 방향
   }
 }`;
 
+// ── Redis 캐시 헬퍼 (share-get/share-save와 동일 패턴) ──
+const REDIS_TTL = 30 * 24 * 60 * 60; // 30일
+
+function redisUrl()   { return process.env.KV_REST_API_URL   || process.env.UPSTASH_REDIS_REST_URL; }
+function redisToken() { return process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN; }
+
+async function redisGet(key) {
+  const url = redisUrl(); const token = redisToken();
+  if (!url || !token) return null;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(['GET', key]),
+  });
+  const d = await r.json();
+  return d.result ?? null; // null if not found
+}
+
+async function redisSet(key, value) {
+  const url = redisUrl(); const token = redisToken();
+  if (!url || !token) return;
+  await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(['SET', key, JSON.stringify(value), 'EX', REDIS_TTL]),
+  });
+}
+
 async function parseBody(req) {
   if (req.body && typeof req.body === 'object') return req.body;
   if (typeof req.body === 'string') {
@@ -160,6 +188,22 @@ export default async function handler(req, res) {
   if (!name || !year || !month || !day || !hash || lifeIndex === undefined || !totalLives || !soulGrade) {
     console.error('[validation] missing fields:', { name, year, month, day, hash, lifeIndex, totalLives, soulGrade });
     return res.status(400).json({ error: '필수 입력값이 누락됐습니다.' });
+  }
+
+  // ── Redis 서버 캐시 확인 (localStorage 없을 때만 호출됨) ──
+  // 키: sinbe_life_{hash}_{lifeIndex} — localStorage와 동일 구조
+  const redisCacheKey = `sinbe_life_${hash}_${lifeIndex}`;
+  try {
+    const cached = await redisGet(redisCacheKey);
+    if (cached) {
+      const life = JSON.parse(cached);
+      console.log(`[redis-cache] HIT lifeIndex=${lifeIndex} hash=${hash} name=${life.name}`);
+      return res.json({ life });
+    }
+    console.log(`[redis-cache] MISS lifeIndex=${lifeIndex} hash=${hash}`);
+  } catch (e) {
+    // Redis 실패 시 조용히 무시하고 AI 생성 진행
+    console.warn('[redis-cache] GET failed:', e.message);
   }
 
   const seedKey = `${hash}_${lifeIndex}`;
@@ -335,6 +379,10 @@ export default async function handler(req, res) {
 
       const life = normalizeLife(data.life);
       console.log(`[success] attempt=${attempt} lifeIndex=${lifeIndex} name=${life.name} group=${life.group} gender=${life.gender}`);
+
+      // Redis에 저장 (비동기, 실패해도 응답에 영향 없음)
+      redisSet(redisCacheKey, life).catch(e => console.warn('[redis-cache] SET failed:', e.message));
+
       return res.json({ life });
     }
 
