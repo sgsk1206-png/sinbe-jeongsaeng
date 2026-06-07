@@ -58,20 +58,14 @@ function getSoulGrade(total) {
   return '고대영혼'; // 4~5
 }
 
-// 탐험 횟수 카운터 기반 스타일 순환 (A→B→C→A→B→C...)
-// localStorage 'sinbe_style_counter'에 횟수 저장 → counter % 3 = styleIndex
-// Math.random() / crypto / Date.now() 모두 환경별 편향 가능 → 순환 방식으로 완전 균등 보장
-const STYLE_COUNTER_KEY = 'sinbe_style_counter';
+// 이전 스타일과 다른 값을 랜덤 선택 — 연속 동일 스타일 방지
+// 'sinbe_last_style'에 마지막 스타일 저장, 다음 탐험 시 다른 값 보장
 function nextStyleIndex() {
-  try {
-    const prev = parseInt(localStorage.getItem(STYLE_COUNTER_KEY) || '0', 10);
-    const counter = isNaN(prev) ? 0 : prev + 1;
-    localStorage.setItem(STYLE_COUNTER_KEY, String(counter));
-    return counter % 3;
-  } catch {
-    // localStorage 접근 불가 시 Math.random() fallback
-    return [0, 1, 2][Math.floor(Math.random() * 3)];
-  }
+  const prev = parseInt(localStorage.getItem('sinbe_last_style') ?? '-1', 10);
+  let next;
+  do { next = Math.floor(Math.random() * 3); } while (next === prev);
+  localStorage.setItem('sinbe_last_style', String(next));
+  return next;
 }
 
 function getCachedLife(hash, index) {
