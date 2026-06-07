@@ -58,11 +58,6 @@ function getSoulGrade(total) {
   return '고대영혼'; // 4~5
 }
 
-// 전생 배열을 birth_year 오름차순(오래된 순)으로 정렬 — null은 끝으로
-function sortLivesByBirthYear(lives) {
-  return [...lives].sort((a, b) => (a.birth_year ?? Infinity) - (b.birth_year ?? Infinity));
-}
-
 function getCachedLife(hash, index) {
   try { return JSON.parse(localStorage.getItem(`${CACHE_PREFIX}${hash}_${index}`)); }
   catch { return null; }
@@ -221,10 +216,10 @@ export default function App() {
   const handleNext = async (fromIndex) => {
     window.scrollTo(0, 0);
     const from = fromIndex !== undefined ? fromIndex : currentLife;
-    const nextDisplayIndex = from + 1; // 정렬된 배열 기준 다음 표시 위치
+    const nextDisplayIndex = from + 1; // 발견 순서 기준 다음 위치
     const loadedCount = pastLives.lives.length; // 현재 로드된 전생 수
 
-    // ① 정렬된 배열에 다음 위치가 이미 있으면 바로 이동
+    // ① 다음 위치가 이미 로드돼 있으면 바로 이동
     if (nextDisplayIndex < loadedCount) {
       setCurrentLife(nextDisplayIndex);
       setPrefetchedLife(null);
@@ -241,13 +236,11 @@ export default function App() {
     // ③ 프리페치 완료된 데이터가 있으면 즉시 사용 (로딩 오버레이 없음)
     if (prefetchedLife && prefetchedLife.loadIndex === loadedCount) {
       const nextLife = prefetchedLife.life;
-      const sortedLives = sortLivesByBirthYear([...pastLives.lives, nextLife]);
-      // nextDisplayIndex(from+1) 고정 이동 — 새 전생의 정렬 위치(displayIndex)로 이동하면
-      // "다음" 클릭 시 오히려 앞 번호로 돌아가거나 방문 안 한 전생이 나오는 버그 발생
+      const newLives = [...pastLives.lives, nextLife]; // 발견 순서 그대로 append
       setPrefetchedLife(null);
-      setPastLives(prev => ({ ...prev, lives: sortedLives }));
+      setPastLives(prev => ({ ...prev, lives: newLives }));
       setCurrentLife(nextDisplayIndex);
-      triggerPrefetch(loadedCount + 1, sortedLives, requestParams);
+      triggerPrefetch(loadedCount + 1, newLives, requestParams);
       return;
     }
 
@@ -273,11 +266,10 @@ export default function App() {
         }
       }
 
-      const sortedLives = sortLivesByBirthYear([...pastLives.lives, nextLife]);
-      // nextDisplayIndex(from+1) 고정 이동 — 경로③과 동일한 이유
-      setPastLives(prev => ({ ...prev, lives: sortedLives }));
+      const newLives = [...pastLives.lives, nextLife]; // 발견 순서 그대로 append
+      setPastLives(prev => ({ ...prev, lives: newLives }));
       setCurrentLife(nextDisplayIndex);
-      triggerPrefetch(loadedCount + 1, sortedLives, requestParams);
+      triggerPrefetch(loadedCount + 1, newLives, requestParams);
     } catch (err) {
       setError(err.message);
       alert(`전생 불러오기 실패: ${err.message}\n잠시 후 다시 시도해 주세요.`);
