@@ -58,14 +58,13 @@ function getSoulGrade(total) {
   return '고대영혼'; // 4~5
 }
 
-// 이전 스타일과 다른 값을 랜덤 선택 — 연속 동일 스타일 방지
-// 'sinbe_last_style'에 마지막 스타일 저장, 다음 탐험 시 다른 값 보장
+// 이전 스타일을 제외한 목록에서 랜덤 선택 — 연속 동일 스타일 방지
 function nextStyleIndex() {
   const prev = parseInt(localStorage.getItem('sinbe_last_style') ?? '-1', 10);
-  let next;
-  do { next = Math.floor(Math.random() * 3); } while (next === prev);
-  localStorage.setItem('sinbe_last_style', String(next));
-  return next;
+  const options = [0, 1, 2].filter(n => n !== prev);
+  const styleIndex = options[Math.floor(Math.random() * options.length)];
+  localStorage.setItem('sinbe_last_style', String(styleIndex));
+  return styleIndex;
 }
 
 function getCachedLife(hash, index) {
@@ -208,9 +207,10 @@ export default function App() {
       }
 
       const lives = [life0];
-      // styleIndex: 탐험 횟수 카운터 순환 (A→B→C→A→...) — 환경 무관 균등 보장
+      // nextStyleIndex() 호출 전에 prev 읽기 — 호출 후엔 이미 새 값으로 덮어씌워짐
+      const prevStyle = parseInt(localStorage.getItem('sinbe_last_style') ?? '-1', 10);
       const styleIndex = nextStyleIndex();
-      console.log(`[style] picked styleIndex=${styleIndex} (${['A','B','C'][styleIndex]}스타일)`);
+      console.log(`[style] prev=${prevStyle} → picked styleIndex=${styleIndex} (${['A','B','C'][styleIndex]}스타일)`);
       setPastLives({ total: totalLives, soul_grade: soulGrade, lives, styleIndex });
       setCurrentLife(0);
       setScreen('result');
