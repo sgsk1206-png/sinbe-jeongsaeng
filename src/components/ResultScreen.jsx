@@ -269,6 +269,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
           life,
           soulGrade: data.soul_grade,
           total: data.total,
+          styleIndex,  // 공유 페이지에서 동일 스타일 재현에 필요
         }),
       });
       const json = await res.json();

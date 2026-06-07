@@ -28,13 +28,13 @@ const GROUP_IMAGE = {
   outcast_여:     ['outcast_f_1.jpg',        'outcast_f_2.jpg',      'outcast_f_3.jpg'],
 };
 
-function getCharImage(life) {
+// styleIndex: share-save에 저장된 원본 탐험의 스타일 인덱스 (0=A,1=B,2=C)
+function getCharImage(life, styleIndex) {
   if (life.group && life.gender) {
     const key = `${life.group}_${life.gender}`;
     const files = GROUP_IMAGE[key];
     if (files?.length) {
-      const idx = Math.floor(Math.random() * files.length);
-      return `/images/characters/${files[idx]}`;
+      return `/images/characters/${files[styleIndex % files.length]}`;
     }
   }
   return life.image_file || '';
@@ -47,22 +47,24 @@ function lightenColor(hex, amount = 0.4) {
   return `rgb(${Math.round(r+(255-r)*amount)},${Math.round(g+(255-g)*amount)},${Math.round(b+(255-b)*amount)})`;
 }
 
-// 캐릭터 이미지/영상 — 마운트 시 1회 랜덤 선택 고정
-function ShareCharImage({ life, identity, shortName, color }) {
-  const [src] = useState(() => getCharImage(life));
+// styleIndex는 share 저장 시 고정된 값 — Math.random() 사용하지 않음
+function ShareCharImage({ life, identity, shortName, color, styleIndex = 0 }) {
+  const src = getCharImage(life, styleIndex);
   const videoSrc = src ? src.replace(/\.[^.]+$/, '.mp4') : null;
   const [videoFailed, setVideoFailed] = useState(false);
   const [videoReady,  setVideoReady]  = useState(false);
   const showVideo = !!videoSrc && !videoFailed;
   return (
     <div className="char-img-wrap" style={{ background: `linear-gradient(160deg, ${color}30 0%, ${color}15 100%)` }}>
+      {/* 비디오 준비 전에는 이미지 표시, 준비되면 fade-out */}
       <img
         className="char-img"
         src={src || ''}
         alt={identity}
         onError={e => { e.currentTarget.style.opacity = '0'; }}
-        style={showVideo ? { opacity: videoReady ? 0 : 1, transition: 'opacity 0.3s' } : undefined}
+        style={showVideo && videoReady ? { opacity: 0, transition: 'opacity 0.3s' } : undefined}
       />
+      {/* visibility:hidden으로 숨겨 모바일 재생버튼 방지 */}
       {showVideo && (
         <video
           className="char-img"
@@ -70,7 +72,9 @@ function ShareCharImage({ life, identity, shortName, color }) {
           autoPlay loop muted playsInline
           onCanPlay={() => setVideoReady(true)}
           onError={() => setVideoFailed(true)}
-          style={{ opacity: videoReady ? 1 : 0, transition: 'opacity 0.3s' }}
+          style={videoReady
+            ? { opacity: 1, transition: 'opacity 0.3s' }
+            : { visibility: 'hidden', opacity: 0 }}
         />
       )}
       <div className="char-img-placeholder">
@@ -82,7 +86,7 @@ function ShareCharImage({ life, identity, shortName, color }) {
 }
 
 // ── 실제 콘텐츠 표시 ──
-function ShareContent({ userName, life, soulGrade, onStart }) {
+function ShareContent({ userName, life, soulGrade, styleIndex = 0, onStart }) {
   const cardColor  = life.color || '#a080cc';
   const lightColor = lightenColor(cardColor);
   const shortName  = life.name?.split(' ').at(-1) || '';
@@ -107,7 +111,7 @@ function ShareContent({ userName, life, soulGrade, onStart }) {
       </div>
 
       {/* 캐릭터 이미지 */}
-      <ShareCharImage life={life} identity={shortIdent} shortName={shortName} color={cardColor} />
+      <ShareCharImage life={life} identity={shortIdent} shortName={shortName} color={cardColor} styleIndex={styleIndex} />
 
       {/* 생애 카드 */}
       <div className="life-card" style={{ borderColor: `${cardColor}50` }}>
@@ -292,6 +296,7 @@ export default function ShareScreen({ shareId = null, shareData = null, onStart 
       userName={resolved.userName}
       life={resolved.life}
       soulGrade={resolved.soulGrade}
+      styleIndex={resolved.styleIndex ?? 0}
       onStart={onStart}
     />
   );

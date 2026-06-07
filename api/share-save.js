@@ -56,10 +56,11 @@ export default async function handler(req, res) {
     } while (attempts < 3);
 
     await redisSet(`share:${shareId}`, {
-      userName: body.userName || '',
-      life:      body.life,
-      soulGrade: body.soulGrade || '',
-      total:     body.total || 1,
+      userName:   body.userName   || '',
+      life:       body.life,
+      soulGrade:  body.soulGrade  || '',
+      total:      body.total      || 1,
+      styleIndex: body.styleIndex ?? 0, // 공유 페이지에서 원본 스타일 재현용
     });
 
     console.log(`[share-save] saved shareId=${shareId}`);
