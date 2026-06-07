@@ -58,18 +58,6 @@ function getSoulGrade(total) {
   return '고대영혼'; // 4~5
 }
 
-// crypto.getRandomValues 기반 스타일 선택 — Math.random()보다 편향 없는 균등 분포 보장
-// 0=A(_1), 1=B(_2), 2=C(_3)
-function pickStyleIndex() {
-  try {
-    const buf = new Uint32Array(1);
-    crypto.getRandomValues(buf);
-    return buf[0] % 3;
-  } catch {
-    return Math.floor(Math.random() * 3);
-  }
-}
-
 function getCachedLife(hash, index) {
   try { return JSON.parse(localStorage.getItem(`${CACHE_PREFIX}${hash}_${index}`)); }
   catch { return null; }
@@ -211,7 +199,7 @@ export default function App() {
 
       const lives = [life0];
       // styleIndex: 탐험 시작 시 1회 결정, pastLives에 포함시켜 세션 내 완전 고정
-      const styleIndex = pickStyleIndex(); // crypto.getRandomValues 기반 균등 선택
+      const styleIndex = Date.now() % 3; // 0=A, 1=B, 2=C — 클릭 시점 ms 기반, 매 탐험마다 다름
       console.log(`[style] picked styleIndex=${styleIndex} (${['A','B','C'][styleIndex]}스타일)`);
       setPastLives({ total: totalLives, soul_grade: soulGrade, lives, styleIndex });
       setCurrentLife(0);
