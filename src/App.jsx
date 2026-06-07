@@ -58,13 +58,20 @@ function getSoulGrade(total) {
   return '고대영혼'; // 4~5
 }
 
-// 이전 스타일을 제외한 목록에서 랜덤 선택 — 연속 동일 스타일 방지
-function nextStyleIndex() {
-  const prev = parseInt(localStorage.getItem('sinbe_last_style') ?? '-1', 10);
-  const options = [0, 1, 2].filter(n => n !== prev);
-  const styleIndex = options[Math.floor(Math.random() * options.length)];
-  localStorage.setItem('sinbe_last_style', String(styleIndex));
-  return styleIndex;
+// 전생 개수(total)만큼 styleIndex 배열 생성
+// 첫 번째: localStorage의 마지막 스타일과 다른 값, 이후: 이전 전생과 다른 값
+// 예) total=5 → [2, 0, 1, 2, 0]
+function buildStyleIndexes(total) {
+  const styleIndexes = [];
+  for (let i = 0; i < total; i++) {
+    const prev = i === 0
+      ? parseInt(localStorage.getItem('sinbe_last_style') ?? '-1', 10)
+      : styleIndexes[i - 1];
+    const options = [0, 1, 2].filter(n => n !== prev);
+    styleIndexes.push(options[Math.floor(Math.random() * options.length)]);
+  }
+  localStorage.setItem('sinbe_last_style', String(styleIndexes[styleIndexes.length - 1]));
+  return styleIndexes;
 }
 
 function getCachedLife(hash, index) {
@@ -207,11 +214,10 @@ export default function App() {
       }
 
       const lives = [life0];
-      // nextStyleIndex() 호출 전에 prev 읽기 — 호출 후엔 이미 새 값으로 덮어씌워짐
-      const prevStyle = parseInt(localStorage.getItem('sinbe_last_style') ?? '-1', 10);
-      const styleIndex = nextStyleIndex();
-      console.log(`[style] prev=${prevStyle} → picked styleIndex=${styleIndex} (${['A','B','C'][styleIndex]}스타일)`);
-      setPastLives({ total: totalLives, soul_grade: soulGrade, lives, styleIndex });
+      // 전생별 개별 styleIndex 배열 생성 — 각 전생마다 다른 스타일
+      const styleIndexes = buildStyleIndexes(totalLives);
+      console.log(`[style] styleIndexes=${JSON.stringify(styleIndexes)}`);
+      setPastLives({ total: totalLives, soul_grade: soulGrade, lives, styleIndexes });
       setCurrentLife(0);
       setScreen('result');
 

@@ -226,9 +226,8 @@ function HistCard({ figure, profile }) {
 }
 
 export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev, isLoadingNext = false }) {
-  // styleIndex는 탐험 시작 시 pastLives 객체에 포함되어 결정됨
-  // → 별도 prop/state가 아니므로 React 배치 타이밍 문제 없이 세션 내 완전 고정
-  const styleIndex = data.styleIndex ?? 0;
+  // 전생별 개별 styleIndex — styleIndexes[currentIndex] 사용
+  const styleIndex = (data.styleIndexes ?? [])[currentIndex] ?? 0;
   const life = data.lives[currentIndex];
   const meta = GRADE_META[data.soul_grade] || GRADE_META['오래된영혼'];
   const cardColor = life.color || meta.color;
@@ -238,14 +237,17 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
   const shortName     = life.name.split(' ').at(-1);              // 마지막 단어만 (연이, 강이도 …)
   const shortIdentity = life.identity.split('(')[0].trim();       // 괄호 앞 직업명만 (구미호, 저승사자 …)
 
-  // 인접 전생 이미지 프리로드 (currentIndex 변경마다 실행)
+  // 인접 전생 이미지 프리로드 — 각 전생의 개별 styleIndex 사용
   useEffect(() => {
-    [data.lives[currentIndex - 1], data.lives[currentIndex + 1]]
-      .filter(Boolean)
-      .map(l => getCharImage(l, styleIndex))
-      .filter(Boolean)
-      .forEach((src) => { const img = new Image(); img.src = src; });
-  }, [currentIndex, data.lives, styleIndex]);
+    [-1, 1].forEach(offset => {
+      const idx = currentIndex + offset;
+      const life = data.lives[idx];
+      if (!life) return;
+      const si = (data.styleIndexes ?? [])[idx] ?? 0;
+      const src = getCharImage(life, si);
+      if (src) { const img = new Image(); img.src = src; }
+    });
+  }, [currentIndex, data.lives, data.styleIndexes]);
 
   // 페이지 전환은 App.jsx의 onNext/onPrev 내부에서 scrollTo 처리
   // currentIndex를 명시적으로 전달 — 스테일 클로저로 인한 잘못된 인덱스 읽기 방지
@@ -269,7 +271,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
           life,
           soulGrade: data.soul_grade,
           total: data.total,
-          styleIndex,  // 공유 페이지에서 동일 스타일 재현에 필요
+          styleIndex,  // 이 전생의 개별 styleIndex — 공유 페이지 스타일 재현용
         }),
       });
       const json = await res.json();
