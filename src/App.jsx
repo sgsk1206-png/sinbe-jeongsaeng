@@ -136,12 +136,14 @@ export default function App() {
         await new Promise(r => setTimeout(r, 800));
         lives = MOCK_PAST_LIVES.lives.slice(0, totalLives);
       } else {
-        // localStorage에 전생 전부 캐시돼 있으면 API 호출 없이 사용
+        // localStorage에 전생 전부 캐시돼 있고 soul_summary도 저장돼 있으면 API 호출 없이 사용
+        // soul_summary 키가 없으면(null) 이전 버전 캐시이므로 API 호출로 soul_summary 확보
         const allCached = Array.from({ length: totalLives }, (_, i) => getCachedLife(hash, i + 1));
-        if (allCached.every(Boolean)) {
+        const cachedSummary = localStorage.getItem(`${SUMMARY_PREFIX}${hash}`);
+        if (allCached.every(Boolean) && cachedSummary !== null) {
           console.log('[handleSubmit] all lives from localStorage cache');
           lives = allCached;
-          soul_summary = localStorage.getItem(`${SUMMARY_PREFIX}${hash}`) || '';
+          soul_summary = cachedSummary;
         } else {
           // /api/all-lives: Redis 번들 캐시 → 개별 키 → AI 생성 순으로 처리
           const result = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade });

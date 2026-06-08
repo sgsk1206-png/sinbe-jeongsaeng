@@ -61,13 +61,17 @@ async function redisGet(key) {
   const d = await r.json();
   return d.result ?? null;
 }
-async function redisSet(key, value) {
+// nx=true → SET ... NX (이미 존재하면 덮어쓰지 않음 — 동시 요청 레이스 컨디션 방지)
+async function redisSet(key, value, nx = false) {
   const url = redisUrl(); const tok = redisToken();
   if (!url || !tok) return;
+  const cmd = nx
+    ? ['SET', key, JSON.stringify(value), 'EX', REDIS_TTL, 'NX']
+    : ['SET', key, JSON.stringify(value), 'EX', REDIS_TTL];
   await fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(['SET', key, JSON.stringify(value), 'EX', REDIS_TTL]),
+    body: JSON.stringify(cmd),
   });
 }
 
@@ -196,25 +200,9 @@ export default async function handler(req, res) {
     console.warn('[all-lives] bundle GET failed:', e.message);
   }
 
-  // ── 2. 개별 Redis 키 확인 (기존 캐시 호환, soul_summary 없음) ──
-  const livesFromIndividual = [];
-  let allIndividualCached = true;
-  for (let i = 1; i <= totalLives; i++) {
-    const key = `sinbe_life_${hash}_${i}`;
-    try {
-      const cached = await redisGet(key);
-      console.log('[debug] life key:', key, 'hit:', !!cached);
-      if (cached) { livesFromIndividual.push(JSON.parse(cached)); }
-      else { allIndividualCached = false; break; }
-    } catch { allIndividualCached = false; break; }
-  }
-  if (allIndividualCached && livesFromIndividual.length === totalLives) {
-    console.log(`[all-lives] individual keys HIT all ${totalLives} hash=${hash}`);
-    redisSet(bundleKey, { lives: livesFromIndividual, soul_summary: '' }).catch(() => {});
-    return res.json({ lives: livesFromIndividual, soul_summary: '' });
-  }
-
-  // ── 3. AI로 전체 전생 한번에 생성 ──
+  // ── 2. AI로 전체 전생 한번에 생성 ──
+  // 개별 Redis 키 폴백 제거: past-lives.js가 개별 생성한 키는 soul_summary 없고
+  // 생성 시점이 달라 일관성이 보장되지 않으므로 번들 캐시 MISS 시 항상 재생성
   const groups = Array.from({ length: totalLives }, (_, i) => assignGroup(hash, i + 1));
 
   let sajuSection = '';
@@ -325,7 +313,8 @@ ${sajuSection}
       console.log(`[all-lives] soul_summary length=${soul_summary.length}`);
 
       // Redis 저장 — 번들({ lives, soul_summary }) + 개별 키 (비동기, 응답 블로킹 없음)
-      redisSet(bundleKey, { lives, soul_summary }).catch(e => console.warn('[all-lives] bundle SET failed:', e.message));
+      // NX: 동시 요청 레이스 컨디션 시 최초 생성 결과만 저장 (덮어쓰기 방지)
+      redisSet(bundleKey, { lives, soul_summary }, true).catch(e => console.warn('[all-lives] bundle SET failed:', e.message));
       lives.forEach((life, i) => {
         redisSet(`sinbe_life_${hash}_${i + 1}`, life).catch(() => {});
       });
