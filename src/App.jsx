@@ -94,6 +94,33 @@ async function fetchLife({ name, dateType, year, month, day, hour, hash, lifeInd
   return data.life;
 }
 
+// 전생 2번째부터 전체를 순차적으로 백그라운드 로드 — Redis를 미리 채워 기기 간 결과 일치 보장
+// usedFigures를 체인으로 전달해 역사 인물 중복 방지도 유지
+// UI 블로킹 없음. 실패해도 기존 prefetch가 보완.
+async function eagerLoadAllLives(params, firstLife) {
+  const { hash, totalLives } = params;
+  if (IS_MOCK || totalLives <= 1) return;
+
+  const loadedLives = [firstLife];
+  for (let lifeIndex = 2; lifeIndex <= totalLives; lifeIndex++) {
+    // localStorage에 있으면 이미 Redis에도 있을 가능성 높음 → 스킵
+    if (getCachedLife(hash, lifeIndex)) {
+      loadedLives.push(getCachedLife(hash, lifeIndex));
+      continue;
+    }
+    try {
+      const usedFigures = loadedLives.map(l => l?.historical_figure).filter(Boolean);
+      const life = await fetchLife({ ...params, lifeIndex, usedFigures });
+      setCachedLife(hash, lifeIndex, life);
+      loadedLives.push(life);
+      console.log(`[eager-load] done lifeIndex=${lifeIndex} name=${life.name}`);
+    } catch (e) {
+      console.warn(`[eager-load] failed lifeIndex=${lifeIndex}:`, e.message);
+      break; // 오류 시 중단 (기존 prefetch가 이후 처리)
+    }
+  }
+}
+
 export default function App() {
   // ── Kakao SDK 초기화 ──
   useEffect(() => {
@@ -221,8 +248,10 @@ export default function App() {
       setCurrentLife(0);
       setScreen('result');
 
-      // 첫 전생 표시 즉시 다음 전생 프리페치 시작 (loadedCount=1)
+      // 다음 전생 프리페치 시작 (UI 즉시 반응용)
       triggerPrefetch(1, lives, params);
+      // 전체 전생 백그라운드 로드 — Redis를 미리 채워 다른 기기에서 동일 결과 보장
+      eagerLoadAllLives(params, life0);
     } catch (err) {
       setError(err.message);
       setScreen('input');
