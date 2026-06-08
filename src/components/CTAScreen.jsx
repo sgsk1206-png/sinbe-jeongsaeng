@@ -29,7 +29,7 @@ const CTA_ITEMS = [
   },
 ];
 
-export default function CTAScreen({ userName, onReset }) {
+export default function CTAScreen({ userName, soulSummary, onReset }) {
   return (
     <div className="cta-screen">
       <div className="cta-header">
@@ -40,6 +40,17 @@ export default function CTAScreen({ userName, onReset }) {
         </p>
         <p className="cta-desc">더 깊은 운명의 비밀을 신비의거울에서 확인해보세요</p>
       </div>
+
+      {/* 영혼 종합 리딩 */}
+      {soulSummary && (
+        <div className="soul-summary-card">
+          <div className="soul-summary-header">
+            <span className="soul-summary-icon">🔮</span>
+            <h3 className="soul-summary-title">영혼의 종합 리딩</h3>
+          </div>
+          <p className="soul-summary-text">{soulSummary}</p>
+        </div>
+      )}
 
       <div className="cta-cards">
         {CTA_ITEMS.map((item) => (

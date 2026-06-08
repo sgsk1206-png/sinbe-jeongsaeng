@@ -114,8 +114,15 @@ group은 별도 지정됩니다. 오행은 인물의 기질·이야기 방향에
 - 도화살 → 강한 매력  역마살 → 방랑  귀문관살 → 초자연 감각
 - 백호살 → 극적 최후  공망 → 허사로 돌아간 꿈
 
-━━ 반환 형식 (lives 배열로 전체 반환) ━━
+━━ soul_summary 규칙 ━━
+- 모든 전생의 karma(업보)를 꿰뚫는 현생 메시지. 3~4문장.
+- "당신의 영혼은 ~" 형식으로 시작. 신비롭고 사주적인 톤.
+- 단순 요약 금지. 영혼의 흐름·패턴·현생에서의 과제를 통찰 있게 서술.
+- 예시 어조: "당신의 영혼은 수백 년에 걸쳐 고독과 헌신의 업을 쌓아왔습니다..."
+
+━━ 반환 형식 ━━
 {
+  "soul_summary": "당신의 영혼은 ~ (3~4문장, 신비롭고 사주적인 톤)",
   "lives": [
     {
       "index": 1,
@@ -164,35 +171,47 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: '필수 입력값 누락' });
   }
 
+  console.log('[debug] hash:', hash, 'total:', totalLives);
+
   // ── 1. Redis 번들 캐시 확인 ──
+  // 번들 형식: { lives: [...], soul_summary: "..." } 또는 구버전 배열 [...]
   const bundleKey = `sinbe_lives_${hash}`;
   try {
     const cached = await redisGet(bundleKey);
+    console.log('[debug] bundle key:', bundleKey, 'hit:', !!cached);
     if (cached) {
-      const lives = JSON.parse(cached);
-      if (Array.isArray(lives) && lives.length === totalLives) {
-        console.log(`[all-lives] bundle HIT hash=${hash} count=${lives.length}`);
-        return res.json({ lives });
+      const bundle = JSON.parse(cached);
+      // 신버전: { lives, soul_summary }
+      if (bundle && Array.isArray(bundle.lives) && bundle.lives.length === totalLives) {
+        console.log(`[all-lives] bundle HIT hash=${hash} count=${bundle.lives.length}`);
+        return res.json({ lives: bundle.lives, soul_summary: bundle.soul_summary || '' });
+      }
+      // 구버전: 배열 직접 저장 (soul_summary 없음)
+      if (Array.isArray(bundle) && bundle.length === totalLives) {
+        console.log(`[all-lives] bundle HIT (legacy) hash=${hash}`);
+        return res.json({ lives: bundle, soul_summary: '' });
       }
     }
   } catch (e) {
     console.warn('[all-lives] bundle GET failed:', e.message);
   }
 
-  // ── 2. 개별 Redis 키 확인 (기존 캐시 호환) ──
+  // ── 2. 개별 Redis 키 확인 (기존 캐시 호환, soul_summary 없음) ──
   const livesFromIndividual = [];
   let allIndividualCached = true;
   for (let i = 1; i <= totalLives; i++) {
+    const key = `sinbe_life_${hash}_${i}`;
     try {
-      const cached = await redisGet(`sinbe_life_${hash}_${i}`);
+      const cached = await redisGet(key);
+      console.log('[debug] life key:', key, 'hit:', !!cached);
       if (cached) { livesFromIndividual.push(JSON.parse(cached)); }
       else { allIndividualCached = false; break; }
     } catch { allIndividualCached = false; break; }
   }
   if (allIndividualCached && livesFromIndividual.length === totalLives) {
     console.log(`[all-lives] individual keys HIT all ${totalLives} hash=${hash}`);
-    redisSet(bundleKey, livesFromIndividual).catch(() => {});
-    return res.json({ lives: livesFromIndividual });
+    redisSet(bundleKey, { lives: livesFromIndividual, soul_summary: '' }).catch(() => {});
+    return res.json({ lives: livesFromIndividual, soul_summary: '' });
   }
 
   // ── 3. AI로 전체 전생 한번에 생성 ──
@@ -301,15 +320,17 @@ ${sajuSection}
       }
 
       const lives = data.lives.slice(0, totalLives).map(l => normalizeLife(l));
+      const soul_summary = typeof data.soul_summary === 'string' ? data.soul_summary.trim() : '';
       console.log(`[all-lives] success count=${lives.length} names=${lives.map(l => l.name).join(', ')}`);
+      console.log(`[all-lives] soul_summary length=${soul_summary.length}`);
 
-      // Redis 저장 — 번들 + 개별 키 (비동기, 응답 블로킹 없음)
-      redisSet(bundleKey, lives).catch(e => console.warn('[all-lives] bundle SET failed:', e.message));
+      // Redis 저장 — 번들({ lives, soul_summary }) + 개별 키 (비동기, 응답 블로킹 없음)
+      redisSet(bundleKey, { lives, soul_summary }).catch(e => console.warn('[all-lives] bundle SET failed:', e.message));
       lives.forEach((life, i) => {
         redisSet(`sinbe_life_${hash}_${i + 1}`, life).catch(() => {});
       });
 
-      return res.json({ lives });
+      return res.json({ lives, soul_summary });
     }
 
     return res.status(502).json({ error: lastErr });

@@ -60,20 +60,22 @@ function setCachedLife(hash, index, life) {
 }
 
 // 전생 전체를 /api/all-lives 에서 한번에 가져옴
-// Redis 번들 캐시 → 개별 캐시 → AI 생성 순으로 시도 (서버 측 처리)
+// 반환: { lives: [...], soul_summary: "..." }
 async function fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade }) {
   const res = await fetch('/api/all-lives', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade }),
   });
-  const data = await res.text();
+  const raw = await res.text();
   let parsed;
-  try { parsed = JSON.parse(data); }
-  catch { throw new Error(`서버 응답 오류: ${data.slice(0, 100)}`); }
+  try { parsed = JSON.parse(raw); }
+  catch { throw new Error(`서버 응답 오류: ${raw.slice(0, 100)}`); }
   if (!res.ok || parsed.error) throw new Error(parsed.error || `서버 오류 (${res.status})`);
-  return parsed.lives;
+  return { lives: parsed.lives, soul_summary: parsed.soul_summary || '' };
 }
+
+const SUMMARY_PREFIX = 'sinbe_summary_';
 
 export default function App() {
   // ── Kakao SDK 초기화 ──
@@ -128,6 +130,8 @@ export default function App() {
     try {
       let lives;
 
+      let soul_summary = '';
+
       if (IS_MOCK) {
         await new Promise(r => setTimeout(r, 800));
         lives = MOCK_PAST_LIVES.lives.slice(0, totalLives);
@@ -137,17 +141,21 @@ export default function App() {
         if (allCached.every(Boolean)) {
           console.log('[handleSubmit] all lives from localStorage cache');
           lives = allCached;
+          soul_summary = localStorage.getItem(`${SUMMARY_PREFIX}${hash}`) || '';
         } else {
           // /api/all-lives: Redis 번들 캐시 → 개별 키 → AI 생성 순으로 처리
-          lives = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade });
+          const result = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade });
+          lives = result.lives;
+          soul_summary = result.soul_summary;
           // localStorage에 각각 저장
           lives.forEach((life, i) => setCachedLife(hash, i + 1, life));
+          try { localStorage.setItem(`${SUMMARY_PREFIX}${hash}`, soul_summary); } catch {}
         }
       }
 
       const styleIndexes = buildStyleIndexes(totalLives);
       console.log(`[style] styleIndexes=${JSON.stringify(styleIndexes)}`);
-      setPastLives({ total: totalLives, soul_grade: soulGrade, lives, styleIndexes });
+      setPastLives({ total: totalLives, soul_grade: soulGrade, lives, styleIndexes, soul_summary });
       setCurrentLife(0);
       setScreen('result');
     } catch (err) {
@@ -215,7 +223,7 @@ export default function App() {
             isLoadingNext={false}
           />
         )}
-        {screen === 'cta' && <CTAScreen userName={userName} onReset={handleReset} />}
+        {screen === 'cta' && <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} />}
       </div>
       <div className="branding">신비의거울</div>
 
