@@ -140,7 +140,7 @@ export default function App() {
         // soul_summary 키가 없으면(null) 이전 버전 캐시이므로 API 호출로 soul_summary 확보
         const allCached = Array.from({ length: totalLives }, (_, i) => getCachedLife(hash, i + 1));
         const cachedSummary = localStorage.getItem(`${SUMMARY_PREFIX}${hash}`);
-        if (allCached.every(Boolean) && cachedSummary !== null) {
+        if (allCached.every(Boolean) && cachedSummary !== null && cachedSummary !== '') {
           console.log('[handleSubmit] all lives from localStorage cache');
           lives = allCached;
           soul_summary = cachedSummary;

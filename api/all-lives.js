@@ -190,10 +190,11 @@ export default async function handler(req, res) {
         console.log(`[all-lives] bundle HIT hash=${hash} count=${bundle.lives.length}`);
         return res.json({ lives: bundle.lives, soul_summary: bundle.soul_summary || '' });
       }
-      // 구버전: 배열 직접 저장 (soul_summary 없음)
+      // 구버전: 배열 직접 저장 (soul_summary 없음) → 재생성 필요
       if (Array.isArray(bundle) && bundle.length === totalLives) {
-        console.log(`[all-lives] bundle HIT (legacy) hash=${hash}`);
-        return res.json({ lives: bundle, soul_summary: '' });
+        console.log(`[all-lives] bundle HIT (legacy, no soul_summary) hash=${hash} → regenerating`);
+        // 구버전은 soul_summary 없으므로 캐시 무효화 후 AI 재생성
+        // 아래 AI 생성 로직으로 fall-through
       }
     }
   } catch (e) {
