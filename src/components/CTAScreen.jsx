@@ -4,7 +4,7 @@ const CTA_ITEMS = [
     title: '오늘 운세',
     desc: '오늘 나의 운명의 흐름을 확인하세요',
     color: '#E8A020',
-    href: 'https://sinbe.net/',
+    href: 'https://www.sinbe.net/todayFortune?tab=saju',
   },
   {
     icon: '🃏',
