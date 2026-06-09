@@ -10,9 +10,6 @@ import { MOCK_PAST_LIVES } from './mockData.js';
 // VITE_MOCK_MODE=true → 목업 데이터 사용 (API 호출 없음)
 const IS_MOCK = import.meta.env.VITE_MOCK_MODE === 'true';
 
-// 전생별 개별 캐싱 (sinbe_life_{hash}_{index})
-const CACHE_PREFIX = 'sinbe_life_';
-
 function hashInput(name, dateType, year, month, day, hour) {
   const str = `${name}|${dateType}|${year}|${month}|${day}|${hour}`;
   let h = 0;
@@ -50,15 +47,6 @@ function buildStyleIndexes(total) {
   return styleIndexes;
 }
 
-function getCachedLife(hash, index) {
-  try { return JSON.parse(localStorage.getItem(`${CACHE_PREFIX}${hash}_${index}`)); }
-  catch { return null; }
-}
-
-function setCachedLife(hash, index, life) {
-  try { localStorage.setItem(`${CACHE_PREFIX}${hash}_${index}`, JSON.stringify(life)); } catch {}
-}
-
 // 전생 전체를 /api/all-lives 에서 한번에 가져옴
 // 반환: { lives: [...], soul_summary: "..." }
 async function fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade }) {
@@ -74,8 +62,6 @@ async function fetchAllLives({ name, dateType, year, month, day, hour, hash, tot
   if (!res.ok || parsed.error) throw new Error(parsed.error || `서버 오류 (${res.status})`);
   return { lives: parsed.lives, soul_summary: parsed.soul_summary || '' };
 }
-
-const SUMMARY_PREFIX = 'sinbe_summary_';
 
 export default function App() {
   // ── Kakao SDK 초기화 ──
@@ -136,23 +122,10 @@ export default function App() {
         await new Promise(r => setTimeout(r, 800));
         lives = MOCK_PAST_LIVES.lives.slice(0, totalLives);
       } else {
-        // localStorage에 전생 전부 캐시돼 있고 soul_summary도 저장돼 있으면 API 호출 없이 사용
-        // soul_summary 키가 없으면(null) 이전 버전 캐시이므로 API 호출로 soul_summary 확보
-        const allCached = Array.from({ length: totalLives }, (_, i) => getCachedLife(hash, i + 1));
-        const cachedSummary = localStorage.getItem(`${SUMMARY_PREFIX}${hash}`);
-        if (allCached.every(Boolean) && cachedSummary !== null && cachedSummary !== '') {
-          console.log('[handleSubmit] all lives from localStorage cache');
-          lives = allCached;
-          soul_summary = cachedSummary;
-        } else {
-          // /api/all-lives: Redis 번들 캐시 → 개별 키 → AI 생성 순으로 처리
-          const result = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade });
-          lives = result.lives;
-          soul_summary = result.soul_summary;
-          // localStorage에 각각 저장
-          lives.forEach((life, i) => setCachedLife(hash, i + 1, life));
-          try { localStorage.setItem(`${SUMMARY_PREFIX}${hash}`, soul_summary); } catch {}
-        }
+        // 항상 API 호출 — Redis 번들 캐시 HIT 시 즉시 반환, MISS 시 AI 생성
+        const result = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade });
+        lives = result.lives;
+        soul_summary = result.soul_summary;
       }
 
       const styleIndexes = buildStyleIndexes(totalLives);

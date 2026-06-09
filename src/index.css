@@ -405,7 +405,7 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .section-content {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.75;
   color: var(--text);
 }
@@ -419,23 +419,24 @@ input[type='number']::-webkit-inner-spin-button {
   font-size: 20px;
   font-weight: 600;
   letter-spacing: 2px;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
 }
 
 .section-content.story {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(237, 232, 245, 0.82);
   line-height: 1.85;
 }
 
 .section-content.death {
-  font-size: 13px;
+  font-size: 15px;
   color: rgba(237, 232, 245, 0.6);
   font-style: italic;
   line-height: 1.7;
 }
 
 .section-content.karma {
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.75;
 }
 
@@ -1014,7 +1015,7 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 /* ────────────────────────────────────────────────────────
-   모바일 ≤ 767px — 입력 화면 텍스트 색상만 (폰트 크기 변경 없음)
+   모바일 ≤ 767px — 텍스트 색상 강화 + 주요 텍스트 최소 15px 보장
 ──────────────────────────────────────────────────────── */
 @media (max-width: 767px) {
 
@@ -1044,6 +1045,14 @@ input[type='number']::-webkit-inner-spin-button {
 
   /* "재미로 보는 전생 이야기입니다" */
   .disclaimer             { color: #a080c8; opacity: 1; }
+
+  /* ── 결과 화면 주요 텍스트 최소 15px 보장 ── */
+  .section-content                { font-size: 15px; }
+  .section-content.identity       { font-size: 15px; }
+  .section-content.story          { font-size: 15px; line-height: 1.9; }
+  .section-content.death          { font-size: 15px; }
+  .section-content.karma          { font-size: 15px; }
+  .soul-summary-text              { font-size: 15px; }
 }
 
 /* ────────────────────────────────────────────────────────
