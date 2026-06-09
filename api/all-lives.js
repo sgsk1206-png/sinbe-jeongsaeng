@@ -308,7 +308,15 @@ ${sajuSection}
         return res.status(502).json({ error: lastErr });
       }
 
-      const lives = data.lives.slice(0, totalLives).map(l => normalizeLife(l));
+      const lives = data.lives
+        .slice(0, totalLives)
+        .map(l => normalizeLife(l))
+        .sort((a, b) => {
+          if (a.birth_year == null && b.birth_year == null) return 0;
+          if (a.birth_year == null) return 1;
+          if (b.birth_year == null) return -1;
+          return a.birth_year - b.birth_year;
+        });
       const soul_summary = typeof data.soul_summary === 'string' ? data.soul_summary.trim() : '';
       console.log(`[all-lives] success count=${lives.length} names=${lives.map(l => l.name).join(', ')}`);
       console.log(`[all-lives] soul_summary length=${soul_summary.length}`);
