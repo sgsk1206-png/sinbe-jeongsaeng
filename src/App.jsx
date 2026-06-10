@@ -22,7 +22,7 @@ function hashInput(name, dateType, year, month, day, hour) {
 // hash 기반 전생 횟수 결정 (api/past-lives.js와 동일 로직) — 최소 2, 최대 5회
 function getTotalLives(hash) {
   const n = parseInt(hash, 16);
-  return 2 + (n % 4); // 2~5
+  return 2 + (n % 2); // 2~3
 }
 
 function getSoulGrade(total) {
