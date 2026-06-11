@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import StarBackground from './components/StarBackground';
 import InputScreen from './components/InputScreen';
 import ResultScreen from './components/ResultScreen';
@@ -63,6 +63,41 @@ async function fetchAllLives({ name, dateType, year, month, day, hour, hash, tot
   return { lives: parsed.lives, soul_summary: parsed.soul_summary || '' };
 }
 
+// 로딩 화면 하단 안내 문구 (5~6초마다 순환)
+const LOADING_MESSAGES = [
+  '전생을 탐험하는 중...',
+  '시간의 강을 거슬러 올라가고 있습니다...',
+  '당신의 전생 기억이 깨어나고 있습니다...',
+  '영혼의 흔적을 찾아가고 있습니다...',
+  '전생의 이야기가 모습을 드러내고 있습니다...',
+  '곧 당신의 전생이 밝혀집니다...',
+];
+
+function LoadingScreen() {
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setMsgIndex(i => (i + 1) % LOADING_MESSAGES.length);
+    }, 5500);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="loading-screen">
+      <video
+        src="/images/loading/loading_combined.mp4.mp4"
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{ maxWidth: '400px', width: '100%', display: 'block', margin: '0 auto' }}
+      />
+      <p className="loading-text">{LOADING_MESSAGES[msgIndex]}</p>
+    </div>
+  );
+}
+
 export default function App() {
   // ── Kakao SDK 초기화 ──
   useEffect(() => {
@@ -95,6 +130,16 @@ export default function App() {
   const [currentLife, setCurrentLife] = useState(0);
   const [userName, setUserName] = useState('');
   const [error, setError] = useState(null);
+  const audioRef = useRef(null);
+  const [isMuted, setIsMuted] = useState(false);
+
+  const handleToggleMute = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const next = !isMuted;
+    audio.muted = next;
+    setIsMuted(next);
+  };
 
   // 공유 페이지 → 메인으로 이동
   const handleShareStart = () => {
@@ -106,6 +151,11 @@ export default function App() {
     const { name, dateType, year, month, day, hour } = formData;
     setUserName(name);
     setError(null);
+
+    if (audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
 
     const hash = hashInput(name, dateType, year, month, day, hour);
     const totalLives = getTotalLives(hash);
@@ -163,6 +213,14 @@ export default function App() {
   if (showShare && (shareRouteId || shareData)) {
     return (
       <div className="app">
+        <audio ref={audioRef} src="/audio/bgm.mp3" loop />
+        <button
+          className="mute-btn"
+          onClick={handleToggleMute}
+          style={{ position: 'fixed', top: 16, right: 16, zIndex: 100, background: 'rgba(0,0,0,0.4)', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 18, cursor: 'pointer' }}
+        >
+          {isMuted ? '🔇' : '🔊'}
+        </button>
         <StarBackground />
         <div className="container">
           <ShareScreen
@@ -178,16 +236,18 @@ export default function App() {
 
   return (
     <div className="app">
+      <audio ref={audioRef} src="/audio/bgm.mp3" loop />
+      <button
+        className="mute-btn"
+        onClick={handleToggleMute}
+        style={{ position: 'fixed', top: 16, right: 16, zIndex: 100, background: 'rgba(0,0,0,0.4)', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 18, cursor: 'pointer' }}
+      >
+        {isMuted ? '🔇' : '🔊'}
+      </button>
       <StarBackground />
       <div className="container">
         {screen === 'input' && <InputScreen onSubmit={handleSubmit} error={error} />}
-        {screen === 'loading' && (
-          <div className="loading-screen">
-            <div className="loading-orb" />
-            <p className="loading-text">전생을 탐험하는 중...</p>
-            <p className="loading-sub">시간의 강을 거슬러 올라가고 있습니다</p>
-          </div>
-        )}
+        {screen === 'loading' && <LoadingScreen />}
         {screen === 'result' && pastLives && (
           <ResultScreen
             userName={userName}
