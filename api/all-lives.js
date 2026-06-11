@@ -149,8 +149,8 @@ group은 별도 지정됩니다. 오행은 인물의 기질·이야기 방향에
         "name_hanja": "한자",
         "birth_death": "생몰년",
         "title": "신분·직책 1~2문장",
-        "achievement": "주요 업적 1~2문장",
-        "evaluation": "역사적 평가 1~2문장",
+        "achievement": "주요 업적 1문장 (핵심만 간결하게)",
+        "evaluation": "역사적 평가 1문장",
         "reason": "닮은 이유 1~2문장"
       }
     }
