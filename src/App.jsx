@@ -86,7 +86,7 @@ function LoadingScreen() {
   return (
     <div className="loading-screen">
       <video
-        src="/images/loading/loading_combined.mp4.mp4"
+        src="/images/loading/loading_combined.mp4"
         autoPlay
         loop
         muted
