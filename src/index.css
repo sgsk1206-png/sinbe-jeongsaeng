@@ -643,10 +643,11 @@ input[type='number']::-webkit-inner-spin-button {
 }
 
 .counselor-photo {
-  width: 200px;
-  height: 200px;
+  width: 260px;
+  height: 260px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: top;
   border: 2px solid #a080cc55;
 }
 
@@ -1125,6 +1126,12 @@ input[type='number']::-webkit-inner-spin-button {
     aspect-ratio: 9 / 16;
     height: auto;
     max-width: 380px;
+    margin: 0 auto;
+  }
+
+  /* ── 상담사 카드 최대 너비 ── */
+  .counselor-card {
+    max-width: 400px;
     margin: 0 auto;
   }
 
