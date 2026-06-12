@@ -618,6 +618,62 @@ input[type='number']::-webkit-inner-spin-button {
   opacity: 0.8;
 }
 
+/* ── 상담사 추천 카드 ── */
+.counselor-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  text-align: center;
+}
+
+.counselor-badge {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  color: #c8a0f0;
+  background: #a080cc25;
+  border: 1px solid #a080cc55;
+  border-radius: 999px;
+  padding: 4px 14px;
+}
+
+.counselor-photo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #a080cc55;
+}
+
+.counselor-name {
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--text);
+}
+
+.counselor-btn {
+  margin-top: 6px;
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #c084fc, #e879f9);
+  color: #1a0a2e;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: opacity 0.22s;
+}
+
+.counselor-btn:hover {
+  opacity: 0.88;
+}
+
 .reset-btn {
   padding: 14px;
   background: transparent;

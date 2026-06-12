@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 const CTA_ITEMS = [
   {
     icon: '☀️',
@@ -6,30 +8,25 @@ const CTA_ITEMS = [
     color: '#E8A020',
     href: 'https://www.sinbe.net/todayFortune?tab=saju',
   },
-  {
-    icon: '🃏',
-    title: '타로 상담',
-    desc: '카드가 말하는 당신의 미래',
-    color: '#4A90D4',
-    href: 'https://sinbe.net/?cate=1',
-  },
-  {
-    icon: '☯️',
-    title: '사주 상담',
-    desc: '운명의 흐름을 읽어드립니다',
-    color: '#A86ECC',
-    href: 'https://sinbe.net/?cate=2',
-  },
-  {
-    icon: '🔮',
-    title: '신점 상담',
-    desc: '신령의 기운으로 풀어드립니다',
-    color: '#5BBFA8',
-    href: 'https://sinbe.net/?cate=3',
-  },
+];
+
+const COUNSELORS = [
+  { code: '985', name: '환희보살', category: '신점' },
+  { code: '993', name: '자운도사', category: '신점' },
+  { code: '502', name: '눈꽃신녀', category: '신점' },
+  { code: '797', name: '미담', category: '신점' },
+  { code: '513', name: '영혜', category: '신점' },
+  { code: '490', name: '반야', category: '신점' },
+  { code: '220', name: '진주', category: '타로' },
+  { code: '774', name: '보라', category: '타로' },
+  { code: '100', name: '해온', category: '타로' },
+  { code: '557', name: '새나', category: '타로' },
+  { code: '730', name: '월령', category: '타로' },
+  { code: '999', name: '현묘', category: '사주' },
 ];
 
 export default function CTAScreen({ userName, soulSummary, onReset }) {
+  const [counselor] = useState(() => COUNSELORS[Math.floor(Math.random() * COUNSELORS.length)]);
   return (
     <div className="cta-screen">
       <div className="cta-header">
@@ -70,6 +67,25 @@ export default function CTAScreen({ userName, soulSummary, onReset }) {
             <span className="cta-arrow" style={{ color: item.color }}>→</span>
           </a>
         ))}
+      </div>
+
+      {/* 상담사 추천 */}
+      <div className="counselor-card">
+        <span className="counselor-badge">{counselor.category}</span>
+        <img
+          className="counselor-photo"
+          src={`/images/counselors/${counselor.code}.jpg`}
+          alt={counselor.name}
+        />
+        <p className="counselor-name">{counselor.name}</p>
+        <a
+          className="counselor-btn"
+          href={`https://www.sinbe.net/counselDetail?Code=${counselor.code}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          상담하러 가기 →
+        </a>
       </div>
 
       <button className="reset-btn" onClick={onReset}>
