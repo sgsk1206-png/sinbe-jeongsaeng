@@ -165,7 +165,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'API 키 미설정' });
 
   const body = await parseBody(req);
@@ -241,20 +241,19 @@ ${sajuSection}
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
       if (attempt > 1) console.warn(`[all-lives] retry attempt=${attempt}`);
 
-      const openrouterRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const openrouterRes = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://sinbe-jeongsaeng.vercel.app',
-          'X-Title': 'sinbe-jeongsaeng',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
           'content-type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'anthropic/claude-sonnet-4-5',
+          model: 'claude-sonnet-4-5',
           max_tokens: TOKENS[attempt - 1],
           temperature: 0,
+          system: SYSTEM_PROMPT,
           messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
             { role: 'user', content: userMessage },
           ],
         }),
@@ -266,7 +265,7 @@ ${sajuSection}
       if (!openrouterRes.ok) {
         let errMsg = rawText;
         try { errMsg = JSON.parse(rawText)?.error?.message || rawText; } catch {}
-        return res.status(502).json({ error: `OpenRouter 오류: ${errMsg.slice(0, 300)}` });
+        return res.status(502).json({ error: `Anthropic API 오류: ${errMsg.slice(0, 300)}` });
       }
 
       let result;
@@ -277,12 +276,12 @@ ${sajuSection}
         return res.status(502).json({ error: lastErr });
       }
 
-      const text = result.choices?.[0]?.message?.content;
-      const finishReason = result.choices?.[0]?.finish_reason ?? 'unknown';
+      const text = result.content?.[0]?.text;
+      const finishReason = result.stop_reason ?? 'unknown';
       console.log(`[all-lives] finish_reason=${finishReason} length=${text?.length ?? 0}`);
 
       if (!text) { lastErr = 'AI 응답 없음'; continue; }
-      if (finishReason === 'length' && attempt < MAX_ATTEMPTS) {
+      if (finishReason === 'max_tokens' && attempt < MAX_ATTEMPTS) {
         lastErr = '토큰 한도 초과'; continue;
       }
 
