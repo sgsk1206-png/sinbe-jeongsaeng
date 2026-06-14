@@ -645,7 +645,7 @@ input[type='number']::-webkit-inner-spin-button {
 .counselor-photo {
   width: min(220px, 70vw);
   height: min(220px, 70vw);
-  border-radius: 50%;
+  border-radius: 12px;
   object-fit: cover;
   object-position: center top;
   border: 2px solid #a080cc55;
