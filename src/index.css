@@ -1135,6 +1135,12 @@ input[type='number']::-webkit-inner-spin-button {
     margin: 0 auto;
   }
 
+  .counselor-photo {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+  }
+
   /* ── 역사 인물: 이미지(260px 기준) + 프로필 가로 배치 ── */
   .hist-figure-row {
     display: flex;
