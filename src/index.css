@@ -646,8 +646,8 @@ input[type='number']::-webkit-inner-spin-button {
   width: min(220px, 70vw);
   height: min(220px, 70vw);
   border-radius: 12px;
-  object-fit: cover;
-  object-position: center top;
+  object-fit: contain;
+  background: #1a0a2e;
   border: 2px solid #a080cc55;
 }
 
