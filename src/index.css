@@ -1131,14 +1131,14 @@ input[type='number']::-webkit-inner-spin-button {
 
   /* ── 상담사 카드 최대 너비 ── */
   .counselor-card {
-    max-width: 360px;
+    max-width: 600px;
     margin: 0 auto;
   }
 
   .counselor-photo {
     width: 100%;
     height: auto;
-    max-height: 400px;
+    max-height: 500px;
   }
 
   /* ── 역사 인물: 이미지(260px 기준) + 프로필 가로 배치 ── */
