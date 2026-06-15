@@ -185,7 +185,7 @@ export default function App() {
       setScreen('result');
     } catch (err) {
       setError(err.message);
-      setScreen('input');
+      setScreen('error');
     }
   };
 
@@ -259,6 +259,12 @@ export default function App() {
           />
         )}
         {screen === 'cta' && <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} />}
+        {screen === 'error' && (
+          <div className="error-screen">
+            <p className="error-message">🔮 지금 많은 분들이 전생을 탐험하고 있어요.<br />다시 시도해주세요.</p>
+            <button className="reset-btn" onClick={handleReset}>다시 탐험하기</button>
+          </div>
+        )}
       </div>
       <div className="branding">신비의거울</div>
 
