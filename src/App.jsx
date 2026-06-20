@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import StarBackground from './components/StarBackground';
 import InputScreen from './components/InputScreen';
+import IntroScreen from './components/IntroScreen';
 import ResultScreen from './components/ResultScreen';
 import CTAScreen from './components/CTAScreen';
 import ShareScreen from './components/ShareScreen';
@@ -127,7 +128,7 @@ export default function App() {
 
   const isEnglish = window.location.pathname.startsWith('/en');
 
-  const [screen, setScreen] = useState('input');
+  const [screen, setScreen] = useState(isEnglish ? 'intro' : 'input');
   const [pastLives, setPastLives] = useState(null);
   const [currentLife, setCurrentLife] = useState(0);
   const [userName, setUserName] = useState('');
@@ -249,6 +250,7 @@ export default function App() {
       </button>
       <StarBackground />
       <div className="container">
+        {screen === 'intro' && <IntroScreen onStart={() => setScreen('input')} />}
         {screen === 'input' && <InputScreen onSubmit={handleSubmit} error={error} isEnglish={isEnglish} />}
         {screen === 'loading' && <LoadingScreen />}
         {screen === 'result' && pastLives && (
