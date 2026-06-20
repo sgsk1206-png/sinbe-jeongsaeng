@@ -196,7 +196,7 @@ RETURN FORMAT (same JSON schema and keys as the Korean version, values in Englis
       "death_year": <number or null>,
       "identity": "Occupation (detailed description)",
       "name": "Region — Romanized name",
-      "gender": "male or female",
+      "gender": "남 (for male) or 여 (for female) — must be exactly 남 or 여, used internally for image matching, never displayed to the user",
       "group": "the assigned group value",
       "story": "Life narrative (minimum 3 sentences)",
       "death": "One sentence describing how this life ended",

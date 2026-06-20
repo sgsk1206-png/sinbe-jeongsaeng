@@ -82,6 +82,9 @@ const GRADE_META = {
   '어린영혼':  { color: '#6BA3D4', emoji: '🌱' },
   '오래된영혼': { color: '#A86ECC', emoji: '🌙' },
   '고대영혼':  { color: '#D4624A', emoji: '⚡' },
+  'Young Soul':   { color: '#6BA3D4', emoji: '🌱' },
+  'Old Soul':     { color: '#A86ECC', emoji: '🌙' },
+  'Ancient Soul': { color: '#D4624A', emoji: '⚡' },
 };
 
 // birth_year / death_year 기반 시대 표시

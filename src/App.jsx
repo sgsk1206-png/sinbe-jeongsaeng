@@ -26,7 +26,12 @@ function getTotalLives(hash) {
   return 2 + (n % 2); // 2~3
 }
 
-function getSoulGrade(total) {
+function getSoulGrade(total, isEnglish) {
+  if (isEnglish) {
+    if (total <= 2) return 'Young Soul';
+    if (total === 3) return 'Old Soul';
+    return 'Ancient Soul';
+  }
   if (total <= 2) return '어린영혼';
   if (total === 3) return '오래된영혼';
   return '고대영혼'; // 4~5
@@ -172,7 +177,7 @@ export default function App() {
 
     const hash = hashInput(name, dateType, year, month, day, hour);
     const totalLives = getTotalLives(hash);
-    const soulGrade = getSoulGrade(totalLives);
+    const soulGrade = getSoulGrade(totalLives, isEnglish);
 
     setScreen('loading');
 
