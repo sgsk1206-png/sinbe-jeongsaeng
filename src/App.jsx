@@ -50,11 +50,11 @@ function buildStyleIndexes(total) {
 
 // 전생 전체를 /api/all-lives 에서 한번에 가져옴
 // 반환: { lives: [...], soul_summary: "..." }
-async function fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade }) {
+async function fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, lang }) {
   const res = await fetch('/api/all-lives', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade }),
+    body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, ...(lang ? { lang } : {}) }),
   });
   const raw = await res.text();
   let parsed;
@@ -186,7 +186,7 @@ export default function App() {
         lives = MOCK_PAST_LIVES.lives.slice(0, totalLives);
       } else {
         // 항상 API 호출 — Redis 번들 캐시 HIT 시 즉시 반환, MISS 시 AI 생성
-        const result = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade });
+        const result = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, lang: isEnglish ? 'en' : undefined });
         lives = result.lives;
         soul_summary = result.soul_summary;
       }
