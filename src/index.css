@@ -1404,3 +1404,82 @@ input[type='number']::-webkit-inner-spin-button {
   transition: color 0.2s;
 }
 .share-popup-close:hover { color: var(--text); }
+
+/* ── IntroScreen (영문 소개 화면) ── */
+.intro-screen {
+  padding: 52px 0 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+}
+
+.intro-header {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.intro-star {
+  font-size: 28px;
+  color: #FFD700;
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
+.intro-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: 4px;
+  background: linear-gradient(135deg, #c084fc, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.intro-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+
+.intro-lead {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.7;
+  letter-spacing: 0.3px;
+}
+
+.intro-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.85;
+  letter-spacing: 0.2px;
+}
+
+.intro-text em {
+  color: #c8a0f0;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.intro-btn {
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #c084fc, #e879f9);
+  color: #1a0a2e;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: 'Gowun Batang', serif;
+  transition: opacity 0.22s;
+}
+
+.intro-btn:hover {
+  opacity: 0.88;
+}
