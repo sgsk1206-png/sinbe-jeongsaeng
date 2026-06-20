@@ -233,7 +233,7 @@ export default function App() {
             isEnglish={isEnglish}
           />
         </div>
-        <div className="branding">신비의거울</div>
+        <div className="branding">{isEnglish ? 'imyeppi.com' : '신비의거울'}</div>
       </div>
     );
   }
@@ -272,7 +272,7 @@ export default function App() {
           </div>
         )}
       </div>
-      <div className="branding">신비의거울</div>
+      <div className="branding">{isEnglish ? 'imyeppi.com' : '신비의거울'}</div>
 
     </div>
   );
