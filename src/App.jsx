@@ -74,15 +74,25 @@ const LOADING_MESSAGES = [
   '곧 당신의 전생이 밝혀집니다...',
 ];
 
-function LoadingScreen() {
+const LOADING_MESSAGES_EN = [
+  'Exploring your past life...',
+  'Traveling back through the river of time...',
+  'Your past-life memories are awakening...',
+  'Tracing the footsteps of your soul...',
+  'Your past-life story is taking shape...',
+  'Your past life will be revealed soon...',
+];
+
+function LoadingScreen({ isEnglish }) {
+  const messages = isEnglish ? LOADING_MESSAGES_EN : LOADING_MESSAGES;
   const [msgIndex, setMsgIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setMsgIndex(i => (i + 1) % LOADING_MESSAGES.length);
+      setMsgIndex(i => (i + 1) % messages.length);
     }, 5500);
     return () => clearInterval(timer);
-  }, []);
+  }, [messages.length]);
 
   return (
     <div className="loading-screen">
@@ -94,7 +104,7 @@ function LoadingScreen() {
         playsInline
         style={{ maxWidth: '400px', width: '100%', display: 'block', margin: '0 auto' }}
       />
-      <p className="loading-text">{LOADING_MESSAGES[msgIndex]}</p>
+      <p className="loading-text">{messages[msgIndex]}</p>
     </div>
   );
 }
@@ -252,7 +262,7 @@ export default function App() {
       <div className="container">
         {screen === 'intro' && <IntroScreen onStart={() => setScreen('input')} />}
         {screen === 'input' && <InputScreen onSubmit={handleSubmit} error={error} isEnglish={isEnglish} />}
-        {screen === 'loading' && <LoadingScreen />}
+        {screen === 'loading' && <LoadingScreen isEnglish={isEnglish} />}
         {screen === 'result' && pastLives && (
           <ResultScreen
             userName={userName}
@@ -267,8 +277,12 @@ export default function App() {
         {screen === 'cta' && <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} isEnglish={isEnglish} />}
         {screen === 'error' && (
           <div className="error-screen">
-            <p className="error-message">🔮 지금 많은 분들이 전생을 탐험하고 있어요.<br />다시 시도해주세요.</p>
-            <button className="reset-btn" onClick={handleReset}>다시 탐험하기</button>
+            <p className="error-message">
+              {isEnglish
+                ? <>🔮 Many people are exploring their past lives right now.<br />Please try again in a moment.</>
+                : <>🔮 지금 많은 분들이 전생을 탐험하고 있어요.<br />다시 시도해주세요.</>}
+            </p>
+            <button className="reset-btn" onClick={handleReset}>{isEnglish ? 'Try Again' : '다시 탐험하기'}</button>
           </div>
         )}
       </div>

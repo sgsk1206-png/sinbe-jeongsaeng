@@ -238,12 +238,12 @@ function ShareContent({ userName, life, soulGrade, styleIndex = 0, onStart }) {
 }
 
 // ── 로딩 화면 ──
-function ShareLoading() {
+function ShareLoading({ isEnglish }) {
   return (
     <div className="share-screen" style={{ alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
       <div className="loading-orb" />
-      <p className="loading-text" style={{ marginTop: 24 }}>전생의 기억을 불러오는 중...</p>
-      <p className="loading-sub">시간의 강을 거슬러 올라가고 있습니다</p>
+      <p className="loading-text" style={{ marginTop: 24 }}>{isEnglish ? 'Retrieving your past-life memories...' : '전생의 기억을 불러오는 중...'}</p>
+      <p className="loading-sub">{isEnglish ? 'Traveling back through the river of time' : '시간의 강을 거슬러 올라가고 있습니다'}</p>
     </div>
   );
 }
@@ -270,7 +270,7 @@ function ShareError({ onStart }) {
 // ── 메인 컴포넌트 ──
 // shareId: Redis ID (새 방식) — /share/{shareId} 경로로 접근 시
 // shareData: 직접 전달 (하위 호환 — 기존 ?data= base64 방식)
-export default function ShareScreen({ shareId = null, shareData = null, onStart }) {
+export default function ShareScreen({ shareId = null, shareData = null, onStart, isEnglish }) {
   const [resolved, setResolved] = useState(shareData);
   const [loading,  setLoading]  = useState(!!shareId && !shareData);
   const [error,    setError]    = useState(false);
@@ -288,7 +288,7 @@ export default function ShareScreen({ shareId = null, shareData = null, onStart 
       .finally(() => setLoading(false));
   }, [shareId, shareData]);
 
-  if (loading) return <ShareLoading />;
+  if (loading) return <ShareLoading isEnglish={isEnglish} />;
   if (error || !resolved) return <ShareError onStart={onStart} />;
 
   return (
