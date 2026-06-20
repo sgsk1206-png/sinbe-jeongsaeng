@@ -1,19 +1,19 @@
 import { useState } from 'react';
 
 const HOURS = [
-  { value: 'unknown', label: '모름' },
-  { value: '자시', label: '자시 (23:00 – 01:00)' },
-  { value: '축시', label: '축시 (01:00 – 03:00)' },
-  { value: '인시', label: '인시 (03:00 – 05:00)' },
-  { value: '묘시', label: '묘시 (05:00 – 07:00)' },
-  { value: '진시', label: '진시 (07:00 – 09:00)' },
-  { value: '사시', label: '사시 (09:00 – 11:00)' },
-  { value: '오시', label: '오시 (11:00 – 13:00)' },
-  { value: '미시', label: '미시 (13:00 – 15:00)' },
-  { value: '신시', label: '신시 (15:00 – 17:00)' },
-  { value: '유시', label: '유시 (17:00 – 19:00)' },
-  { value: '술시', label: '술시 (19:00 – 21:00)' },
-  { value: '해시', label: '해시 (21:00 – 23:00)' },
+  { value: 'unknown', label: '모름',                   labelEn: 'Unknown' },
+  { value: '자시',   label: '자시 (23:00 – 01:00)',   labelEn: 'Jasi (자시) (23:00–01:00)' },
+  { value: '축시',   label: '축시 (01:00 – 03:00)',   labelEn: 'Chuksi (축시) (01:00–03:00)' },
+  { value: '인시',   label: '인시 (03:00 – 05:00)',   labelEn: 'Insi (인시) (03:00–05:00)' },
+  { value: '묘시',   label: '묘시 (05:00 – 07:00)',   labelEn: 'Myosi (묘시) (05:00–07:00)' },
+  { value: '진시',   label: '진시 (07:00 – 09:00)',   labelEn: 'Jinsi (진시) (07:00–09:00)' },
+  { value: '사시',   label: '사시 (09:00 – 11:00)',   labelEn: 'Sasi (사시) (09:00–11:00)' },
+  { value: '오시',   label: '오시 (11:00 – 13:00)',   labelEn: 'Osi (오시) (11:00–13:00)' },
+  { value: '미시',   label: '미시 (13:00 – 15:00)',   labelEn: 'Misi (미시) (13:00–15:00)' },
+  { value: '신시',   label: '신시 (15:00 – 17:00)',   labelEn: 'Sinsi (신시) (15:00–17:00)' },
+  { value: '유시',   label: '유시 (17:00 – 19:00)',   labelEn: 'Yusi (유시) (17:00–19:00)' },
+  { value: '술시',   label: '술시 (19:00 – 21:00)',   labelEn: 'Sulsi (술시) (19:00–21:00)' },
+  { value: '해시',   label: '해시 (21:00 – 23:00)',   labelEn: 'Haesi (해시) (21:00–23:00)' },
 ];
 
 export default function InputScreen({ onSubmit, error, isEnglish }) {
@@ -117,7 +117,7 @@ export default function InputScreen({ onSubmit, error, isEnglish }) {
           >
             {HOURS.map(h => (
               <option key={h.value} value={h.value}>
-                {isEnglish && h.value === 'unknown' ? 'Unknown' : h.label}
+                {isEnglish ? h.labelEn : h.label}
               </option>
             ))}
           </select>

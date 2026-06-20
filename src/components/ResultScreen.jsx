@@ -535,6 +535,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
               {isEnglish ? (
                 <button
                   className="share-popup-btn share-popup-btn-kakao"
+                  style={{ background: '#1877F2', color: '#fff' }}
                   onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sharePopup.url)}`, '_blank')}
                 >
                   Share on Facebook
