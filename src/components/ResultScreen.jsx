@@ -225,7 +225,7 @@ function HistCard({ figure, profile }) {
   );
 }
 
-export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev, isLoadingNext = false }) {
+export default function ResultScreen({ userName, data, currentIndex, onNext, onPrev, isLoadingNext = false, isEnglish }) {
   // 전생별 개별 styleIndex — styleIndexes[currentIndex] 사용
   const styleIndex = (data.styleIndexes ?? [])[currentIndex] ?? 0;
   const life = data.lives[currentIndex];
@@ -316,8 +316,11 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
     <div className="result-screen">
       <div className="result-header">
         <p className="life-count-text">
-          <span className="name-highlight">{userName}</span>님의 전생은 총{' '}
-          <span className="count-highlight">{data.total}회</span>입니다
+          {isEnglish ? (
+            <><span className="name-highlight">{userName}</span>, you have lived{' '}<span className="count-highlight">{data.total}</span> past lives</>
+          ) : (
+            <><span className="name-highlight">{userName}</span>님의 전생은 총{' '}<span className="count-highlight">{data.total}회</span>입니다</>
+          )}
         </p>
         <div className="soul-grade-badge" style={{ borderColor: meta.color, color: meta.color }}>
           {meta.emoji} {data.soul_grade}
@@ -353,40 +356,44 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
 
         <div className="card-body">
           <div className="card-header-inline" style={{ borderBottomColor: `${cardColor}25` }}>
-            <span className="life-number">{currentIndex + 1}번째 전생</span>
+            <span className="life-number">{isEnglish ? `Past Life #${currentIndex + 1}` : `${currentIndex + 1}번째 전생`}</span>
             <span className="era-text" style={{ color: cardColor }}>{eraDisplay(life)}</span>
           </div>
 
           <div className="card-section">
-            <span className="section-label">신분</span>
+            <span className="section-label">{isEnglish ? 'Status' : '신분'}</span>
             <p className="section-content identity">{life.identity}</p>
           </div>
 
           <div className="card-divider" style={{ backgroundColor: `${cardColor}18` }} />
 
           <div className="card-section">
-            <span className="section-label">전생 이름</span>
+            <span className="section-label">{isEnglish ? 'Name in This Life' : '전생 이름'}</span>
             <p className="section-content life-name" style={{ color: cardColor }}>{shortName}</p>
           </div>
 
           <div className="card-divider" style={{ backgroundColor: `${cardColor}18` }} />
 
           <div className="card-section">
-            <span className="section-label">생애</span>
+            <span className="section-label">{isEnglish ? 'Life Story' : '생애'}</span>
             <p className="section-content story">{life.story}</p>
           </div>
 
           <div className="card-divider" style={{ backgroundColor: `${cardColor}18` }} />
 
           <div className="card-section">
-            <span className="section-label">최후</span>
+            <span className="section-label">{isEnglish ? 'How This Life Ended' : '최후'}</span>
             <p className="section-content death">{life.death}</p>
           </div>
 
           <div className="card-divider" style={{ backgroundColor: `${cardColor}18` }} />
 
           <div className="card-section karma-section" style={{ backgroundColor: `${cardColor}0d` }}>
-            <span className="section-label karma-label">✦ 현생 업보</span>
+            <span className="section-label karma-label">
+              {isEnglish ? (
+                <>✦ Karma Carried Into This Life <span className="info-icon" title="In Korean belief, karma from a past life shapes challenges and lessons in this one">ⓘ</span></>
+              ) : '✦ 현생 업보'}
+            </span>
             <p className="section-content karma">{life.karma}</p>
           </div>
 
@@ -394,11 +401,13 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
             <>
               <div className="card-divider" style={{ backgroundColor: `${cardColor}18` }} />
               <div className="card-section karma-section" style={{ backgroundColor: `${cardColor}0d` }}>
-                <span className="section-label karma-label">✦ 전생의 흔적</span>
+                <span className="section-label karma-label">{isEnglish ? '✦ Traces of the Past Life' : '✦ 전생의 흔적'}</span>
                 <p className="section-content karma">
-                  {life.past_trace.startsWith('전생의')
-                    ? life.past_trace
-                    : `전생의 ${shortIdentity} 때문에 이번생엔... ${life.past_trace}`}
+                  {isEnglish
+                    ? `Because of who you were — ${shortIdentity} — in that past life... ${life.past_trace}`
+                    : life.past_trace.startsWith('전생의')
+                      ? life.past_trace
+                      : `전생의 ${shortIdentity} 때문에 이번생엔... ${life.past_trace}`}
                 </p>
               </div>
             </>
@@ -408,7 +417,11 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
           {life.historical_figure && (
             <>
               <div className="hist-divider">
-                <span className="hist-divider-label">✨ 당신의 전생 기운과 닮은 인물</span>
+                <span className="hist-divider-label">
+                  {isEnglish ? (
+                    <>✨ A Real Figure from Korean History Who Shares Your Energy <span className="info-icon" title="This is a real person who actually lived in Korean history — not a fictional character — matched to your Saju energy">ⓘ</span></>
+                  ) : '✨ 당신의 전생 기운과 닮은 인물'}
+                </span>
               </div>
 
               {/* hist-figure-row: 모바일 세로 / PC 가로 배치 */}
@@ -432,14 +445,14 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
                         {p.birth_death && (
                           <div className="hist-meta-row">
                             <span className="hist-meta-icon">📅</span>
-                            <span className="hist-meta-label">생몰</span>
+                            <span className="hist-meta-label">{isEnglish ? 'Born–Died (Korean History)' : '생몰'}</span>
                             <span className="hist-meta-value">{p.birth_death}</span>
                           </div>
                         )}
                         {p.title && (
                           <div className="hist-meta-row">
                             <span className="hist-meta-icon">👑</span>
-                            <span className="hist-meta-label">신분</span>
+                            <span className="hist-meta-label">{isEnglish ? 'Status' : '신분'}</span>
                             <span className="hist-meta-value">{p.title}</span>
                           </div>
                         )}
@@ -448,7 +461,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
                       {/* ── 주요 업적 ── */}
                       {p.achievement && (
                         <div className="hist-section">
-                          <div className="hist-section-label">📖 주요 업적</div>
+                          <div className="hist-section-label">{isEnglish ? '📖 Their Real Achievements in Korean History' : '📖 주요 업적'}</div>
                           <p className="hist-section-text">{p.achievement}</p>
                         </div>
                       )}
@@ -456,7 +469,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
                       {/* ── 역사적 평가 ── */}
                       {p.evaluation && (
                         <div className="hist-section">
-                          <div className="hist-section-label">✨ 역사적 평가</div>
+                          <div className="hist-section-label">{isEnglish ? '✨ How Korean History Remembers Them' : '✨ 역사적 평가'}</div>
                           <p className="hist-section-text">{p.evaluation}</p>
                         </div>
                       )}
@@ -464,7 +477,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
                       {/* ── 닮은 이유 ── */}
                       {(p.reason || life.historical_reason) && (
                         <div className="hist-section">
-                          <div className="hist-section-label">💫 닮은 이유</div>
+                          <div className="hist-section-label">{isEnglish ? '💫 Why Your Energy Resembles Theirs' : '💫 닮은 이유'}</div>
                           <p className="hist-section-text hist-reason-text">
                             {p.reason || life.historical_reason}
                           </p>
@@ -482,7 +495,7 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
       <div className="nav-buttons">
         {currentIndex > 0 && (
           <button className="nav-btn prev-btn" onClick={handlePrev}>
-            ← 이전
+            {isEnglish ? '← Previous' : '← 이전'}
           </button>
         )}
         <button
@@ -492,43 +505,52 @@ export default function ResultScreen({ userName, data, currentIndex, onNext, onP
           disabled={isLoadingNext}
         >
           {isLoadingNext
-            ? '탐험 중...'
+            ? (isEnglish ? 'Exploring...' : '탐험 중...')
             : currentIndex < data.total - 1
-            ? '다음 전생 →'
-            : '여정 마치기 ✦'}
+            ? (isEnglish ? 'Next Past Life →' : '다음 전생 →')
+            : (isEnglish ? 'Finish Journey ✦' : '여정 마치기 ✦')}
         </button>
       </div>
 
       {/* 공유 버튼 */}
       <button className="share-btn" onClick={handleShare} disabled={shareSaving}>
-        {shareSaving ? '링크 생성 중...' : '🔗 이 전생 공유하기'}
+        {shareSaving ? (isEnglish ? 'Creating link...' : '링크 생성 중...') : (isEnglish ? '🔗 Share This Past Life' : '🔗 이 전생 공유하기')}
       </button>
 
-      <p className="disclaimer">재미로 보는 전생 이야기입니다</p>
+      <p className="disclaimer">{isEnglish ? 'Just for fun — a past-life story' : '재미로 보는 전생 이야기입니다'}</p>
 
       {/* 공유 팝업 */}
       {sharePopup && (
         <div className="share-popup-overlay" onClick={() => setSharePopup(null)}>
           <div className="share-popup" onClick={e => e.stopPropagation()}>
-            <p className="share-popup-title">✦ 전생 공유하기</p>
+            <p className="share-popup-title">{isEnglish ? '✦ Share This Past Life' : '✦ 전생 공유하기'}</p>
             <p className="share-popup-url">{sharePopup.url}</p>
             <div className="share-popup-btns">
               <button
                 className="share-popup-btn share-popup-btn-copy"
                 onClick={() => copyShareUrl(sharePopup.url)}
               >
-                {copyToast ? '✓ 복사됐습니다!' : '🔗 링크 복사'}
+                {copyToast ? (isEnglish ? '✓ Copied!' : '✓ 복사됐습니다!') : (isEnglish ? '🔗 Copy Link' : '🔗 링크 복사')}
               </button>
-              {window.Kakao?.isInitialized?.() && (
+              {isEnglish ? (
                 <button
                   className="share-popup-btn share-popup-btn-kakao"
-                  onClick={() => shareToKakao(sharePopup.url)}
+                  onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(sharePopup.url)}`, '_blank')}
                 >
-                  카카오톡 공유
+                  Share on Facebook
                 </button>
+              ) : (
+                window.Kakao?.isInitialized?.() && (
+                  <button
+                    className="share-popup-btn share-popup-btn-kakao"
+                    onClick={() => shareToKakao(sharePopup.url)}
+                  >
+                    카카오톡 공유
+                  </button>
+                )
               )}
             </div>
-            <button className="share-popup-close" onClick={() => setSharePopup(null)}>✕ 닫기</button>
+            <button className="share-popup-close" onClick={() => setSharePopup(null)}>{isEnglish ? '✕ Close' : '✕ 닫기'}</button>
           </div>
         </div>
       )}
