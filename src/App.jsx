@@ -125,6 +125,8 @@ export default function App() {
     return hasSharePath || hasDataParam;
   });
 
+  const isEnglish = window.location.pathname.startsWith('/en');
+
   const [screen, setScreen] = useState('input');
   const [pastLives, setPastLives] = useState(null);
   const [currentLife, setCurrentLife] = useState(0);
@@ -227,6 +229,7 @@ export default function App() {
             shareId={shareRouteId}       // /share/{id} 방식
             shareData={shareData}         // ?data= base64 방식 (하위 호환)
             onStart={handleShareStart}
+            isEnglish={isEnglish}
           />
         </div>
         <div className="branding">신비의거울</div>
@@ -246,7 +249,7 @@ export default function App() {
       </button>
       <StarBackground />
       <div className="container">
-        {screen === 'input' && <InputScreen onSubmit={handleSubmit} error={error} />}
+        {screen === 'input' && <InputScreen onSubmit={handleSubmit} error={error} isEnglish={isEnglish} />}
         {screen === 'loading' && <LoadingScreen />}
         {screen === 'result' && pastLives && (
           <ResultScreen
@@ -256,9 +259,10 @@ export default function App() {
             onNext={handleNext}
             onPrev={handlePrev}
             isLoadingNext={false}
+            isEnglish={isEnglish}
           />
         )}
-        {screen === 'cta' && <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} />}
+        {screen === 'cta' && <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} isEnglish={isEnglish} />}
         {screen === 'error' && (
           <div className="error-screen">
             <p className="error-message">🔮 지금 많은 분들이 전생을 탐험하고 있어요.<br />다시 시도해주세요.</p>
