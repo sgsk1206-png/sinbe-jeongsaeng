@@ -50,8 +50,7 @@ export default function CTAScreenEN({ userName, soulSummary, onReset }) {
         </p>
       </div>
 
-      {/* TODO: Replace # with actual Ko-fi link */}
-      <a className="support-btn" href="#" target="_blank" rel="noopener noreferrer">
+      <a className="support-btn" href="https://ko-fi.com/imyeppi" target="_blank" rel="noopener noreferrer">
         ☕ Support Me
       </a>
 
