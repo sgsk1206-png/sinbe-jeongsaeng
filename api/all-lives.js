@@ -241,7 +241,7 @@ export default async function handler(req, res) {
 
   // ── 1. Redis 번들 캐시 확인 ──
   // 번들 형식: { lives: [...], soul_summary: "..." } 또는 구버전 배열 [...]
-  const bundleKey = `sinbe_lives_${hash}`;
+  const bundleKey = lang === 'en' ? `sinbe_lives_en_${hash}` : `sinbe_lives_${hash}`;
   try {
     const cached = await redisGet(bundleKey);
     console.log('[debug] bundle key:', bundleKey, 'hit:', !!cached);
