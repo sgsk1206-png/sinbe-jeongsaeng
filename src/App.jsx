@@ -4,6 +4,7 @@ import InputScreen from './components/InputScreen';
 import IntroScreen from './components/IntroScreen';
 import ResultScreen from './components/ResultScreen';
 import CTAScreen from './components/CTAScreen';
+import CTAScreenEN from './components/CTAScreenEN';
 import ShareScreen from './components/ShareScreen';
 import { decodeShareData } from './utils/share.js';
 import { MOCK_PAST_LIVES } from './mockData.js';
@@ -279,7 +280,10 @@ export default function App() {
             isEnglish={isEnglish}
           />
         )}
-        {screen === 'cta' && <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} isEnglish={isEnglish} />}
+        {screen === 'cta' && (isEnglish
+          ? <CTAScreenEN userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} />
+          : <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} isEnglish={isEnglish} />
+        )}
         {screen === 'error' && (
           <div className="error-screen">
             <p className="error-message">
