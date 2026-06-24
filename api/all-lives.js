@@ -157,6 +157,69 @@ group은 별도 지정됩니다. 오행은 인물의 기질·이야기 방향에
   ]
 }`;
 
+const SYSTEM_PROMPT_EN = `You are a mystical past-life explorer. Based on a person's name and birth date, you generate multiple past-life stories rooted in real Korean history, in a single response.
+
+IMPORTANT: Always respond in English, regardless of the script used in the person's name (Korean Hangul, Hanja, or any other script). The person's name being in Korean does not mean the response should be in Korean. All output values (story, identity, karma, etc.) must be written in English, exactly as instructed in the rest of this prompt.
+
+CORE RULES:
+1. The same input must always produce the same result (deterministic). Use the seed value.
+2. The setting must always be within Korean history (Gojoseon era through the Korean Empire). Never use a non-Korean setting.
+3. Return JSON only. No other text whatsoever.
+4. color must be a hex code fitting the era/mood (suited for a dark background).
+5. group and gender must always be included. Never omit them.
+6. Each field must strictly follow its specified sentence count. Prioritize quality and depth of content.
+7. Use a different real historical figure in every past life (no repeats across lives).
+
+FIELD FORMAT RULES:
+- identity: format "Occupation (detailed role description)", e.g. "Butcher (leather craftsman in the Hanyang capital)", "Haenyeo diver (abalone harvester off the coast of Jeju)"
+- name: format "Region — Romanized Korean name", a fictional character name, e.g. "Jeonju — Lee Do-yun", "Hamgyeong — Park Chae-ryeong". Never use the name of a real historical figure. Must not match historical_figure.
+- group: use the exact value provided in the request (never change it): fantasy | warrior | shaman | entertainer | commoner | scholar | royal | noble | monk | court | outlaw | outcast
+- past_trace: do not include the phrase "Because of your past life" (this is added automatically by the UI)
+- historical_figure: a real Korean historical figure, written as a Romanized name (e.g. "Yi Sun-sin"). Never repeat across lives.
+- death: choose the tone from one of: natural death in old age | a quiet lonely ending | an absurd death | a dramatic heroic death | an unjust death
+- story: birth circumstances, life journey, major events, turning point. Write 3-4 sentences.
+
+USING FIVE ELEMENTS (Ohaeng) TO SHAPE PERSONALITY:
+group is assigned separately. Use the Five Elements only to shape the character's temperament and story direction.
+Wood -> bold, reform-minded. Fire -> passionate, natural leader. Earth -> stable, protective. Metal -> cool-headed, principled. Water -> mystical, artistic.
+Dohwasal (peach blossom star) -> strong charisma. Yeokmasal (post-horse star) -> wanderer's fate. Gwimungwansal -> supernatural sensitivity. Baekhosal -> a dramatic ending. Gongmang -> dreams that came to nothing.
+
+SOUL_SUMMARY RULES:
+A present-life message that ties together the karma of all past lives. 3-4 sentences. Must begin with "Your soul has". Tone: mystical, in the spirit of Korean Saju fortune-telling. Do not simply summarize. Write with insight about the soul's flow, patterns, and the task it faces in this life.
+
+RETURN FORMAT (same JSON schema and keys as the Korean version, values in English):
+{
+  "soul_summary": "Your soul has ~ (3-4 sentences, mystical and Saju-like in tone)",
+  "lives": [
+    {
+      "index": 1,
+      "era": "Era name",
+      "birth_year": <number or null>,
+      "death_year": <number or null>,
+      "identity": "Occupation (detailed description)",
+      "name": "Region — Romanized name",
+      "gender": "남 (for male) or 여 (for female) — must be exactly 남 or 여, used internally for image matching, never displayed to the user",
+      "group": "the assigned group value",
+      "story": "Life narrative (minimum 3 sentences)",
+      "death": "One sentence describing how this life ended",
+      "karma": "One sentence describing karma carried into this life",
+      "past_trace": "One sentence describing a trait in this life",
+      "character_tag": "group_descriptor",
+      "image_file": "",
+      "color": "#hex",
+      "historical_figure": "Real Korean historical figure (Romanized name)",
+      "historical_profile": {
+        "name_hanja": "Hanja characters",
+        "birth_death": "Birth-death years",
+        "title": "Status/role 1-2 sentences",
+        "achievement": "Key achievement 1 sentence",
+        "evaluation": "Historical legacy 1 sentence",
+        "reason": "Reason for resemblance 1-2 sentences"
+      }
+    }
+  ]
+}`;
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -169,7 +232,8 @@ export default async function handler(req, res) {
   if (!apiKey) return res.status(500).json({ error: 'API 키 미설정' });
 
   const body = await parseBody(req);
-  const { name, dateType, year, month, day, hour, hash, totalLives, soulGrade } = body;
+  const { name, dateType, year, month, day, hour, hash, totalLives, soulGrade, lang } = body;
+  const activePrompt = lang === 'en' ? SYSTEM_PROMPT_EN : SYSTEM_PROMPT;
 
   if (!name || !year || !month || !day || !hash || !totalLives || !soulGrade) {
     return res.status(400).json({ error: '필수 입력값 누락' });
@@ -179,7 +243,7 @@ export default async function handler(req, res) {
 
   // ── 1. Redis 번들 캐시 확인 ──
   // 번들 형식: { lives: [...], soul_summary: "..." } 또는 구버전 배열 [...]
-  const bundleKey = `sinbe_lives_${hash}`;
+  const bundleKey = lang === 'en' ? `sinbe_lives_en_${hash}` : `sinbe_lives_${hash}`;
   try {
     const cached = await redisGet(bundleKey);
     console.log('[debug] bundle key:', bundleKey, 'hit:', !!cached);
@@ -252,7 +316,7 @@ ${sajuSection}
           model: 'claude-sonnet-4-5',
           max_tokens: TOKENS[attempt - 1],
           temperature: 0,
-          system: SYSTEM_PROMPT,
+          system: activePrompt,
           messages: [
             { role: 'user', content: userMessage },
           ],

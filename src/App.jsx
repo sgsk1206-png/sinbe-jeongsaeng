@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import StarBackground from './components/StarBackground';
 import InputScreen from './components/InputScreen';
+import IntroScreen from './components/IntroScreen';
 import ResultScreen from './components/ResultScreen';
 import CTAScreen from './components/CTAScreen';
+import CTAScreenEN from './components/CTAScreenEN';
 import ShareScreen from './components/ShareScreen';
 import { decodeShareData } from './utils/share.js';
 import { MOCK_PAST_LIVES } from './mockData.js';
@@ -25,7 +27,12 @@ function getTotalLives(hash) {
   return 2 + (n % 2); // 2~3
 }
 
-function getSoulGrade(total) {
+function getSoulGrade(total, isEnglish) {
+  if (isEnglish) {
+    if (total <= 2) return 'Young Soul';
+    if (total === 3) return 'Old Soul';
+    return 'Ancient Soul';
+  }
   if (total <= 2) return '어린영혼';
   if (total === 3) return '오래된영혼';
   return '고대영혼'; // 4~5
@@ -49,11 +56,11 @@ function buildStyleIndexes(total) {
 
 // 전생 전체를 /api/all-lives 에서 한번에 가져옴
 // 반환: { lives: [...], soul_summary: "..." }
-async function fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade }) {
+async function fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, lang }) {
   const res = await fetch('/api/all-lives', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade }),
+    body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, ...(lang ? { lang } : {}) }),
   });
   const raw = await res.text();
   let parsed;
@@ -73,15 +80,25 @@ const LOADING_MESSAGES = [
   '곧 당신의 전생이 밝혀집니다...',
 ];
 
-function LoadingScreen() {
+const LOADING_MESSAGES_EN = [
+  'Exploring your past life...',
+  'Traveling back through the river of time...',
+  'Your past-life memories are awakening...',
+  'Tracing the footsteps of your soul...',
+  'Your past-life story is taking shape...',
+  'Your past life will be revealed soon...',
+];
+
+function LoadingScreen({ isEnglish }) {
+  const messages = isEnglish ? LOADING_MESSAGES_EN : LOADING_MESSAGES;
   const [msgIndex, setMsgIndex] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setMsgIndex(i => (i + 1) % LOADING_MESSAGES.length);
+      setMsgIndex(i => (i + 1) % messages.length);
     }, 5500);
     return () => clearInterval(timer);
-  }, []);
+  }, [messages.length]);
 
   return (
     <div className="loading-screen">
@@ -93,7 +110,7 @@ function LoadingScreen() {
         playsInline
         style={{ maxWidth: '400px', width: '100%', display: 'block', margin: '0 auto' }}
       />
-      <p className="loading-text">{LOADING_MESSAGES[msgIndex]}</p>
+      <p className="loading-text">{messages[msgIndex]}</p>
     </div>
   );
 }
@@ -125,7 +142,9 @@ export default function App() {
     return hasSharePath || hasDataParam;
   });
 
-  const [screen, setScreen] = useState('input');
+  const isEnglish = window.location.pathname.startsWith('/en');
+
+  const [screen, setScreen] = useState(isEnglish ? 'intro' : 'input');
   const [pastLives, setPastLives] = useState(null);
   const [currentLife, setCurrentLife] = useState(0);
   const [userName, setUserName] = useState('');
@@ -159,7 +178,7 @@ export default function App() {
 
     const hash = hashInput(name, dateType, year, month, day, hour);
     const totalLives = getTotalLives(hash);
-    const soulGrade = getSoulGrade(totalLives);
+    const soulGrade = getSoulGrade(totalLives, isEnglish);
 
     setScreen('loading');
 
@@ -173,7 +192,7 @@ export default function App() {
         lives = MOCK_PAST_LIVES.lives.slice(0, totalLives);
       } else {
         // 항상 API 호출 — Redis 번들 캐시 HIT 시 즉시 반환, MISS 시 AI 생성
-        const result = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade });
+        const result = await fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, lang: isEnglish ? 'en' : undefined });
         lives = result.lives;
         soul_summary = result.soul_summary;
       }
@@ -227,9 +246,10 @@ export default function App() {
             shareId={shareRouteId}       // /share/{id} 방식
             shareData={shareData}         // ?data= base64 방식 (하위 호환)
             onStart={handleShareStart}
+            isEnglish={isEnglish}
           />
         </div>
-        <div className="branding">신비의거울</div>
+        <div className="branding">{isEnglish ? 'imyeppi.com' : '신비의거울'}</div>
       </div>
     );
   }
@@ -246,8 +266,9 @@ export default function App() {
       </button>
       <StarBackground />
       <div className="container">
-        {screen === 'input' && <InputScreen onSubmit={handleSubmit} error={error} />}
-        {screen === 'loading' && <LoadingScreen />}
+        {screen === 'intro' && <IntroScreen onStart={() => setScreen('input')} />}
+        {screen === 'input' && <InputScreen onSubmit={handleSubmit} error={error} isEnglish={isEnglish} />}
+        {screen === 'loading' && <LoadingScreen isEnglish={isEnglish} />}
         {screen === 'result' && pastLives && (
           <ResultScreen
             userName={userName}
@@ -256,17 +277,25 @@ export default function App() {
             onNext={handleNext}
             onPrev={handlePrev}
             isLoadingNext={false}
+            isEnglish={isEnglish}
           />
         )}
-        {screen === 'cta' && <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} />}
+        {screen === 'cta' && (isEnglish
+          ? <CTAScreenEN userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} />
+          : <CTAScreen userName={userName} soulSummary={pastLives?.soul_summary} onReset={handleReset} isEnglish={isEnglish} />
+        )}
         {screen === 'error' && (
           <div className="error-screen">
-            <p className="error-message">🔮 지금 많은 분들이 전생을 탐험하고 있어요.<br />다시 시도해주세요.</p>
-            <button className="reset-btn" onClick={handleReset}>다시 탐험하기</button>
+            <p className="error-message">
+              {isEnglish
+                ? <>🔮 Many people are exploring their past lives right now.<br />Please try again in a moment.</>
+                : <>🔮 지금 많은 분들이 전생을 탐험하고 있어요.<br />다시 시도해주세요.</>}
+            </p>
+            <button className="reset-btn" onClick={handleReset}>{isEnglish ? 'Try Again' : '다시 탐험하기'}</button>
           </div>
         )}
       </div>
-      <div className="branding">신비의거울</div>
+      <div className="branding">{isEnglish ? 'imyeppi.com' : '신비의거울'}</div>
 
     </div>
   );
