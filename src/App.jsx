@@ -57,11 +57,22 @@ function buildStyleIndexes(total) {
 // 전생 전체를 /api/all-lives 에서 한번에 가져옴
 // 반환: { lives: [...], soul_summary: "..." }
 async function fetchAllLives({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, lang }) {
-  const res = await fetch('/api/all-lives', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, ...(lang ? { lang } : {}) }),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 55000);
+  let res;
+  try {
+    res = await fetch('/api/all-lives', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, dateType, year, month, day, hour, hash, totalLives, soulGrade, ...(lang ? { lang } : {}) }),
+      signal: controller.signal,
+    });
+  } catch (err) {
+    if (err.name === 'AbortError') throw new Error('TIMEOUT');
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
   const raw = await res.text();
   let parsed;
   try { parsed = JSON.parse(raw); }
