@@ -1606,3 +1606,81 @@ input[type='number']::-webkit-inner-spin-button {
   color: var(--text-muted);
   letter-spacing: 0.5px;
 }
+
+/* ── Solemate 오픈베타 CTA (영문) ── */
+.solemate-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.solemate-card {
+  width: 100%;
+  background: linear-gradient(135deg, #160a28 0%, #0d0920 100%);
+  border: 1px solid #a080cc55;
+  border-radius: 16px;
+  padding: 26px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.solemate-icon {
+  font-size: 28px;
+}
+
+.solemate-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #c084fc, #e879f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.solemate-desc {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.85;
+  letter-spacing: 0.2px;
+}
+
+.solemate-btn {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 14px 32px;
+  background: linear-gradient(135deg, #c084fc, #e879f9);
+  color: #1a0a2e;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  border: none;
+  border-radius: 999px;
+  text-decoration: none;
+  font-family: 'Gowun Batang', serif;
+  cursor: pointer;
+  transition: opacity 0.22s;
+  text-align: center;
+}
+
+.solemate-btn:hover {
+  opacity: 0.88;
+}
+
+.solemate-more-link {
+  font-size: 13px;
+  color: #c8a0f0;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: opacity 0.22s;
+}
+
+.solemate-more-link:hover {
+  text-decoration: underline;
+  opacity: 0.88;
+}

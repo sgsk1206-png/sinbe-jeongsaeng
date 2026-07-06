@@ -1,7 +1,3 @@
-const COMING_SOON_ITEMS = [
-  { icon: '🔮', title: 'More experiences coming soon...' },
-];
-
 export default function CTAScreenEN({ userName, soulSummary, onReset }) {
   return (
     <div className="cta-screen">
@@ -54,15 +50,30 @@ export default function CTAScreenEN({ userName, soulSummary, onReset }) {
         ☕ Support Me
       </a>
 
-      <div className="coming-soon-section">
-        <h3 className="coming-soon-title">✦ Coming Soon</h3>
-        <p className="coming-soon-subtitle">More ways to explore Korean fortune-telling are on the way.</p>
-        {COMING_SOON_ITEMS.map((item, i) => (
-          <div key={i} className="coming-soon-item">
-            <span className="coming-soon-icon">{item.icon}</span>
-            <span className="coming-soon-label">{item.title}</span>
-          </div>
-        ))}
+      <div className="solemate-section">
+        <div className="solemate-card">
+          <span className="solemate-icon">🔐</span>
+          <h3 className="solemate-title">Solemate — Your Secret Space</h3>
+          <p className="solemate-desc">
+            A private encrypted diary where only you hold the key. Share selectively. Keep your secrets safe.
+          </p>
+          <a
+            className="solemate-btn"
+            href="https://diary.imyeppi.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Try Open Beta →
+          </a>
+        </div>
+        <a
+          className="solemate-more-link"
+          href="https://imyeppi.com"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          More from imyeppi →
+        </a>
       </div>
 
       <button className="reset-btn" onClick={onReset}>
